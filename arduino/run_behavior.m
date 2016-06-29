@@ -3,7 +3,8 @@ warning off
 
 % Open audio player
 a = audiodevinfo;
-sc = 'HD USB Audio (Core Audio)';
+%sc = 'HD USB Audio (Core Audio)';
+sc = 'Speakers (High Definition Audio Device) (Windows DirectSound)';
 device = a.output(find(strcmp({a.output.Name},sc)==1)).ID;
 fs = 192000;
 bitrate = 24;
