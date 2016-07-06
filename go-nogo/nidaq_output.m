@@ -1,10 +1,10 @@
 s = daq.createSession('ni');
-addAnalogOutputChannel(s,'dev1','ao0','Voltage');
+addAnalogOutputChannel(s,'dev1','ao1','Voltage');
 s.Rate = 250e3;
 fs = s.Rate;
 
 pad = ceil(fs * .1);
-eventLength = ceil(.001 * fs);
+eventLength = ceil(.01 * fs);
 stimDur = ceil(1 * fs);
 noise = rand(1,stimDur)/3;
 noise = noise - mean(noise);

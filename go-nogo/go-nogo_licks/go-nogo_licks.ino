@@ -48,8 +48,9 @@ void setup() {
   // setup serial port
   Serial.begin(9600);
   Serial.flush();
-  Serial.print("TRIAL ");
-  Serial.print(trialCnt);
+  Serial.print(micros());
+  Serial.print(" TRIAL");
+  Serial.println(trialCnt);
 }
 
 void loop() {
@@ -62,6 +63,7 @@ void loop() {
     case 0: {
         if (Serial.available() > 0) {
           trialType = Serial.read();
+          Serial.print(micros());
           String trialStr;
           if (trialType == 48) {
             trialStr = " NOISE";
@@ -70,7 +72,6 @@ void loop() {
             trialStr = " SIGNAL";
           }
           Serial.println(trialStr);
-          Serial.print("WAITING FOR NO LICKS... ");
           taskState = 1;
         }
         break;
@@ -92,11 +93,11 @@ void loop() {
 
         // let matlab know that the mouse is ready
         t = micros();
-        Serial.println(t);
+        Serial.print(t);
+        Serial.println(" TON");
 
         // next state
         taskState = 2;
-        Serial.println("WAITING FOR AUDIO...");
         break;
       }
 
@@ -200,7 +201,7 @@ void loop() {
           t = micros();
           timeoutEnd = t + timeoutDur;
           Serial.print(t);
-          Serial.println(" TIMEOUTON");
+          Serial.println(" TOSTART");
           timeoutState = HIGH;
         }
         // during timeout
@@ -211,13 +212,13 @@ void loop() {
             t = micros();
             timeoutEnd = t + timeoutDur;
             Serial.print(t);
-            Serial.println(" TIMEOUTON");
+            Serial.println(" TOSTART");
           }
           // if the timer expires
           if (micros() >= timeoutEnd) {
             // switch states
             Serial.print(micros());
-            Serial.println(" TIMEOUTOFF");
+            Serial.println(" TOEND");
             taskState = 7;
           }
         }
@@ -228,11 +229,16 @@ void loop() {
     // TRIAL END
     case 7: {
         Serial.print(micros());
-        Serial.println(" TRIALEND");
+        Serial.println(" TOFF");
         Serial.println();
         trialCnt++;
-        Serial.print("TRIAL ");
+        Serial.print(micros());
+        Serial.print(" TRIAL");
         Serial.println(trialCnt);
+        // flush the newline
+        if (Serial.available() > 0) {
+          Serial.read();
+        }
         taskState = 0;
       }
   }
