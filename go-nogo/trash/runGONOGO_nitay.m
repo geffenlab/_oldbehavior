@@ -10,7 +10,7 @@ state = 0;
 % Make stimulus
 pad = ceil(fs * .1);
 eventLength = ceil(.01 * fs);
-stimDur = ceil(1 * fs);
+stimDur = ceil(3.56 * fs);
 noise = rand(1,stimDur)/3;
 noise = noise - mean(noise);
 sound = [noise zeros(1,pad)];
@@ -25,9 +25,12 @@ pause;
 while 1
     out = serialRead(p);
     
+    fprintf(fid,'%s',out);
+    fprintf('%s',out);
+    
     if ~isempty(regexp(out,'TRIAL', 'once'))
         % Send trial type
-        fprintf(p,'1');
+        fprintf(p,'0');
     elseif ~isempty(regexp(out,'TON', 'once')) 
         % Play stimulus
         queueOutputData(s,stim(2,:)');
@@ -37,11 +40,7 @@ while 1
         if s.IsRunning
             stop(s);
         end
-        pause(.5);
     end
-    
-    %fprintf(fid,'%s',out);
-    %fprintf('%s',out);
 end
             
 stop(s);           

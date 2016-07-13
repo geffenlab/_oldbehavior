@@ -21,7 +21,6 @@ int lickOn = 0;
 int lickCnt = 0;
 int trialType;
 int trialCnt = 1;
-int cnt = 0;
 
 // time variables:
 unsigned long t;                    // master time variable in us
@@ -31,10 +30,10 @@ unsigned long lickTime = 0;         // lick timestamp in us
 unsigned long respWinEnd;
 unsigned long rewardEnd;
 unsigned long timeoutEnd;
-float holdTime;
-float respWin;
-float rewardDur;
-float timeoutDur;
+unsigned long respWin = 1500000;
+unsigned long rewardDur = 50000;
+unsigned long timeoutDur = 7000000;
+long holdTime = 2000;               // hold time in ms
 
 
 void setup() {
@@ -50,36 +49,6 @@ void setup() {
   // setup serial port
   Serial.begin(9600);
   Serial.flush();
-
-  // retrieve parameters from matlab
-  int done = 0;
-  float val[4];
-  while (!done) {
-    while (Serial.available() > 0) {
-      val[cnt] = Serial.parseFloat();
-      cnt++;
-      if (cnt > 3) {
-        done = 1;
-        holdTime = val[0];
-        respWin = val[1];
-        rewardDur = val[2];
-        timeoutDur = val[3];
-        Serial.read();
-
-        Serial.print("HOLDTIME ");
-        Serial.println(val[0]);
-        Serial.print("RESPWIN ");
-        Serial.println(val[1]);
-        Serial.print("REWTIME ");
-        Serial.println(val[2]);
-        Serial.print("TOTIME ");
-        Serial.println(val[3]);
-        break;
-      }
-    }
-  }
-
-  // initialize first trial
   Serial.print(micros());
   Serial.print(" TRIAL");
   Serial.println(trialCnt);
@@ -98,8 +67,7 @@ void loop() {
     case 0: {
         if (Serial.available() > 0) {
           trialType = Serial.read();
-          t = micros();
-          Serial.print(t);
+          Serial.print(micros());
           Serial.print(" TT");
           Serial.println(trialType);
           taskState = 1;
@@ -112,7 +80,7 @@ void loop() {
     case 1: {
         // start the wait timer
         long t0 = millis();
-        while ((millis() - t0) < (long)(holdTime * (float)1000)) {
+        while ((millis() - t0) < holdTime) {
           checkLick();
           // if there is a lick...
           if (lickState == HIGH) {
@@ -155,7 +123,7 @@ void loop() {
 
         if (stimState == HIGH) {
           t = micros();
-          respWinEnd = t + (unsigned long)(respWin * (float)1000000);
+          respWinEnd = t + respWin;
           Serial.print(t);
           Serial.println(" STIMOFF");
           lickTime = 0;
@@ -220,7 +188,7 @@ void loop() {
           t = micros();
           Serial.print(t);
           Serial.println(" REWARDON");
-          rewardEnd = t + (unsigned long)(rewardDur * (float)1000000);
+          rewardEnd = t + rewardDur;
           rewardState = HIGH;
         }
         // when time runs out, turn it off
@@ -258,7 +226,7 @@ void loop() {
           if (lickTime > t) {
             // reset the timeout
             t = micros();
-            timeoutEnd = t + (unsigned long)(timeoutDur * (float)1000000);
+            timeoutEnd = t + timeoutDur;
             Serial.print(t);
             Serial.println(" TOSTART");
           }
