@@ -8,6 +8,14 @@ void setup() {
   Serial.begin(9600);
   Serial.flush();
 
+  Serial.println('a'); // send a character to matlab
+  char a = 'b';
+  while (a != 'a') {
+    // Wait for matlab to send specific character to arduino
+    a = Serial.read();
+  }
+  Serial.flush();
+
 }
 
 void loop() {

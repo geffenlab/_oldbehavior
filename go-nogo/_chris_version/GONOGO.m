@@ -1,6 +1,7 @@
-function GONOGO_training(params)
+function GONOGO(params)
 
-makeStim(192e3,10e3,1,2,.1,.1,.01);
+keyboard
+stim = makeStimFilt(250e3,10e3,1,2,.1,.1,.01,FILT.filt);
 
 % Setup
 p = setupSerialPort('COM4',9600);

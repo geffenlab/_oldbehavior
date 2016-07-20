@@ -1,12 +1,8 @@
 function primeTube
-delete(instrfindall);
-KbName('UnifyKeyNames');
 
-port = 'COM6';
-[status, cmdOut] = loadArduinoSketch(port,'primeTube');
-cmdOut
 
-p = setupSerial(port);
+
+p = setupSerialPort('COM6',9600);
 
 str = {'CLOSED','OPEN'};
 state = 0;
@@ -15,11 +11,11 @@ while 1
     [~,~,keyCode] = KbCheck();
     if sum(keyCode) == 1
         switch KbName(keyCode)
-            case 'Return'
+            case 'return'
                 state = ~state;
                 fprintf(p,'%i',1);
                 disp(['Lickport ' str{state+1}]);
-            case 'ESCAPE' 
+            case 'esc' 
                 disp('Exit.');
                 break;
         end
@@ -28,5 +24,6 @@ while 1
 end
 
 delete(p);
+delete(instrfindall);
 
 

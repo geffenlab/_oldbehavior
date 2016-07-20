@@ -50,6 +50,7 @@ void setup() {
   // setup serial port
   Serial.begin(9600);
   Serial.flush();
+  Serial.read();
 
   // retrieve parameters from matlab
   int done = 0;
