@@ -1,59 +1,57 @@
 function Training(params)
 KbName('UnifyKeyNames');
-fileGoto = [params.fn '_training.txt'];
-
-comport = 'COM6';
+dbstop if error
+delete(instrfindall)
 
 %Load corresponding Arduino sketch
 hexPath = [params.hex filesep 'Training.ino.hex'];
-[status, cmdOut] = loadArduinoSketch(params.comport,hexPath);
+[~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
+disp('STARTING SERIAL');
+s = setupSerial(params.comPort);
+n = params.n;
 
 % Open text file
+fileGoto = [params.fn '_training.txt'];
 fn = fopen(fileGoto,'w');
-
 
 %Send setup() variables to arduino
 varvect = [params.holdD params.rewardD params.respD params.timeoutD];
 fprintf(s,'%f %f %f %f ',varvect);
 
-%Variables
-selectStimuli       = [0]; %multiples of 0.1s
-t                   = 0;
-ts                  = {};
-timeoutState        = 0;
-rewardState         = 0;
-
 % modify params to reflect actual stimuli used
-params.dbSteps = params.dbSteps([1 end]);
-params.dB = params.dB([1 end]);
-params.toneA = params.toneA([1 end]);
+params.dbSteps = params.dbSteps(1);
+params.dB = params.dB(1);
+params.toneA = params.toneA(1);
 params.noiseD = params.noiseD(1);
 
 % Make stimuli
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD;
+nd = params.noiseD + params.toneD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-
-
 % make noise
-[noise,events] = makeStimFilt(Fs,f,sd,nd,0,namp,rd,FILT.filt);
+[noise,events] = makeStimFilt(Fs,f,sd,nd,0,namp,rd,params.filt);
 % make signals and add to noise
-for i = 1:length(samp)
-    stim{i} = makeStimFilt(Fs,f,sd,nd,samp(i),namp,rd,FILT.filt);
-end
+stim = makeStimFilt(Fs,f,sd,nd,samp,namp,rd,params.filt);
 
-disp('Press any key to start.');
+disp(' ');
+disp('Press any key to start TRAINING...');
+disp(' ');
 pause;
 
 
-taskState = 0;
+% Preallocate some variables
+t                   = 0;
+ts                  = {};
+timeoutState        = 0;
+rewardState         = 0;
+taskState           = 0;
+lickCount           = [];
 disp(' ');
-lickCount = [];
 %%Task
 while 1
     
@@ -64,7 +62,7 @@ while 1
             lickCount = 0;
             
             if t ~= 1
-                fprintf(' Waiting %g seconds with no licks to proceed...\n',patientWait)
+                fprintf(' Waiting %g seconds with no licks to proceed...\n',params.holdD)
             end
             
             while 1
@@ -90,7 +88,7 @@ while 1
                 taskState = 2;
             else  %Signal, stim{2}
                 fprintf(s,'%i',1);
-                queueOutputData(n,[stim{1}'*10 events']);
+                queueOutputData(n,[stim'*10 events']);
                 startBackground(n)
                 trialType(t) = 1;
                 disp(sprintf('%03d 0 %i %s SIGNAL_TRIAL',t,trialType(t),ardOutput(1:end-2)));
@@ -179,14 +177,13 @@ while 1
     end
 end
 
-save(sprintf('%s\\%03d_%s.mat',datDir,mouseID,time),'ts','trialType');
+save(sprintf('%s.mat',params.fn),'ts','trialType','params');
 [f,pC] = plotPerformance(ts,trialType);
 fprintf('%g%% CORRECT\n',pC*100);
-print(f,sprintf('%s\\%03d_%s_plot.png',datDir,mouseID,time),'-dpng','-r300');
+print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+fclose(fn);
+delete(s);
 pause
-% save(sprintf('%s_%d_TimeStamps.mat',time,mouseID),'ts');
-% save(sprintf('%s_%d_trialTypes.mat',time,mouseID),'trialType');
-delete(s)
-close('all')
-clear all
+
+
 

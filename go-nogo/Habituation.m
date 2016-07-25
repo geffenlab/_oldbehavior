@@ -1,19 +1,25 @@
 function Habituation(params)
-
 KbName('UnifyKeyNames');
-s = params.s;
+dbstop if error
+delete(instrfindall)
 
-% Load arduino sketch
+% Load arduino sketch and start the serial port
 hexPath = [params.hex filesep 'Habituation.ino.hex'];
-[status, cmdOut] = loadArduinoSketch(params.comport,hexPath);
+[status, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
+disp('STARTING SERIAL');
+s = setupSerial(params.comPort);
+
+%Open txt file
+fileGoto = [params.fn '_habituation.txt'];
+fn = fopen(fileGoto,'w');
 
 %Other Variables
 trialNumber = 0;
 sessionStatus = 1;
 inputType = {'REWARD','LICK'};
-
-disp('Starting...')
+disp(' ')
+disp('Starting habituation...')
 disp(' ')
 
 while sessionStatus == 1
@@ -34,10 +40,10 @@ while sessionStatus == 1
         end
         
         %Display variables and command
-        inputPrint = inputType{(str2num(ardOutput(1))+1)};
-        timeStamp = str2num(ardOutput(3:end));
-        disp(sprintf('%03d %d %s',trialNumber,timeStamp,inputPrint))
-        %fprintf(fn,'%03d %d %s\n',trialNumber,timeStamp,inputPrint);
+        inputPrint = inputType{(str2double(ardOutput(1))+1)};
+        ts = str2double(ardOutput(3:end));
+        disp(sprintf('%03d %d %s',trialNumber,ts,inputPrint))
+        fprintf(fn,'%03d %d %s\n',trialNumber,ts,inputPrint);
         
     end
     
@@ -49,5 +55,7 @@ while sessionStatus == 1
     end
     
 end
+
+delete(s);
 
 

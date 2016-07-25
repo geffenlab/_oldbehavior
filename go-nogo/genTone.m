@@ -11,11 +11,11 @@ if ~exist('amp','var') || isempty(amp)
 end
 
 if ramp > 0
-    n = fs*(d + 2*ramp);
+    n = round(fs*(d + 2*ramp));
     r = genRamp(fs,ramp);
     r = [r ones(1,n - (2*ramp*fs)) fliplr(r)];
 else
-    n = fs*d;
+    n = round(fs*d);
     r = ones(1,n);
 end
 

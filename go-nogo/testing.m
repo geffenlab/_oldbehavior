@@ -1,84 +1,66 @@
-function [ts,trialType] = Testing(comport,fs,mouseID)
-
-delete(instrfindall)
+function Testing(params)
 KbName('UnifyKeyNames');
-
-if ~exist('mouseID','var')
-    mouseID = 999;
-end
+dbstop if error
+delete(instrfindall)
 
 %Load corresponding Arduino sketch
-[status, cmdOut] = loadArduinoSketch(comport,'Training');
-disp(cmdOut)
+hexPath = [params.hex filesep 'Testing.ino.hex'];
+[~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
+cmdOut
+disp('STARTING SERIAL');
+s = setupSerial(params.comPort);
+n = params.n;
 
-%Establish connections
-[s] = setupSerial(comport);
-[n,Fs] = setupNI_analog([0,1],fs);
-n.IsContinuous = false;
-
-%Load Filter
-FILT = load('SMALL_BOOTH_FILT_70dB_200-9e3kHZ');
-
-%Set path for file by MouseNumber and Date, Save and write .txt File
-time = datestr(now,'ddmmyyHHMMss');
-datDir = sprintf('C:\\Users\\geffen-behaviour2\\Dropbox\\GeffenLab\\Nitay\\Data\\Testing\\%03d',mouseID);
-if ~exist(datDir,'dir')
-    mkdir(datDir);
-end
-fileGoto = sprintf('%s\\%03d_%s.txt',datDir,mouseID,time);
+% Open text file
+fileGoto = [params.fn '_testing.txt'];
 fn = fopen(fileGoto,'w');
 
 %Send setup() variables to arduino
-patientWait = 1.5;
-rewardDur = 0.1;
-responseDur = 1.2;
-timeoutDur = 7.0;
-varvect = [patientWait rewardDur responseDur timeoutDur];
+varvect = [params.holdD params.rewardD params.respD params.timeoutD];
 fprintf(s,'%f %f %f %f ',varvect);
 
-%Variables
-t                   = 0;
-ts                  = {};
-timeoutState        = 0;
-rewardState         = 0;
+% modify params to reflect actual stimuli used
+params.noiseD = params.noiseD(1);
 
 % Make stimuli
-f           = 10e3;
-sd          = 1;
-nd          = [1];
-dbSteps     = linspace(0,-20,5); % -5 to -20
-dB          = 70 + dbSteps;
-samp        = .1 .* 10 .^ (dbSteps./20);
-namp        = 1;
-rd          = .01;
-durProbs    = [ones(1,length(nd)) ./ length(nd)];
-dbProbs     = [.5 ones(1,length(dbSteps)) ./ (2*(length(dbSteps)))];
+Fs = params.fsActual;
+f = params.toneF;
+sd = params.toneD;
+nd = params.noiseD + params.toneD;
+samp = params.toneA;
+namp = params.noiseA;
+rd = params.rampD;
+durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
+dbProbs = [.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
 %Preallocate stimulus package
 stim = cell(length(nd),length(samp)+1);
 events = cell(length(nd),1);
-
-fprintf('\nBuilding Stimuli...')
-
+disp('Building stimuli...');
 for i = 1:length(nd)
     %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,FILT.filt);
+    [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
     %columns 2:end
     for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,FILT.filt);
+        stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
-    fprintf('.')
 end
 
-
-fprintf('\nPress any key to start.');
+disp(' ');
+disp('Press any key to start TESTING...');
+disp(' ');
 pause;
 
 
-taskState = 0;
+% Preallocate some variables
+t                   = 0;
+ts                  = {};
+timeoutState        = 0;
+rewardState         = 0;
+taskState           = 0;
+lickCount           = [];
 disp(' ');
-lickCount = [];
 %%Task
 while 1
     
@@ -89,7 +71,7 @@ while 1
             lickCount = 0;
             
             if t ~= 1
-                fprintf(' Waiting %g seconds with no licks to proceed...\n',patientWait)
+                fprintf(' Waiting %g seconds with no licks to proceed...\n',params.holdD)
             end
             
             while 1
@@ -232,14 +214,13 @@ while 1
     end
 end
 
-save(sprintf('%s\\%03d_%s.mat',datDir,mouseID,time),'ts','trialType');
-[f,pC] = plotPerformance(ts,ttype);
-[h,psychCurve] = Psychometric_Curve(ts,trialType,mouseID,time);
+save(sprintf('%s.mat',params.fn),'ts','trialType','params');
+[f,pC] = plotPerformance(ts,trialType);
+[h,~] = Psychometric_Curve(ts,trialType,params.fn);
 fprintf('%g%% CORRECT\n',pC*100);
-print(f,sprintf('%s\\%03d_%s_plot.png',datDir,mouseID,time),'-dpng','-r300');
-print(h,sprintf('%s\\%03d_%s_psychCurve.png',datDir,mouseID,time),'-dpng','-r300');
+print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+print(h,sprintf('%s_psychCurve.png',params.fn),'-dpng','-r300');
+fclose(fn);
+delete(s);
 pause
-delete(s)
-close('all')
-clear all
 

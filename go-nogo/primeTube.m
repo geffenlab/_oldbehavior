@@ -3,7 +3,8 @@ delete(instrfindall);
 KbName('UnifyKeyNames');
 
 port = 'COM6';
-[status, cmdOut] = loadArduinoSketch(port,'primeTube');
+hexPath = 'C:\Users\geffen-behaviour2\Documents\GitHub\behavior\go-nogo\_hex\primeTube.ino.hex';
+[status, cmdOut] = loadArduinoSketch(port,hexPath);
 cmdOut
 
 p = setupSerial(port);

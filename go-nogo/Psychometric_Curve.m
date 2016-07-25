@@ -1,4 +1,4 @@
-function [h,psychCurve] = Psychometric_Curve(ts,trialType,mouseID,time)
+function [h,psychCurve] = Psychometric_Curve(ts,trialType,fn)
 
 t = 1:length(ts);
 dbSteps = linspace(0,-20,5);
@@ -24,7 +24,7 @@ psychCurve = [hitr_5,hitr_4,hitr_3,hitr_2,hitr_1];
 
 h = figure;
 plot(fliplr(dbSteps),psychCurve)
-title(sprintf('Mouse %d Psychometric Curve %s',mouseID,time));
+title(sprintf('%s Psychometric Curve',fn));
 xlabel('dbSteps');
 ylabel('pHit');
 ylim([0 1]);
