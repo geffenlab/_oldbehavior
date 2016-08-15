@@ -31,7 +31,6 @@ stim = [stim zeros(1,(pad+pulseWidth)*fs)];
 events = events * pulseMagnitude;
 t = (1:length(stim)) / fs;
 
-
 %  hold on
 %  plot(t,stim);
 %  plot([ramp ramp], ylim,'k');

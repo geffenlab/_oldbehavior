@@ -14,6 +14,10 @@ s = setupSerial(params.comPort);
 fileGoto = [params.fn '_habituation.txt'];
 fn = fopen(fileGoto,'w');
 
+%Send setup() variables to arduino
+varvect = [params.holdD params.rewardD];
+fprintf(s,'%f %f ',varvect);
+
 %Other Variables
 trialNumber = 0;
 sessionStatus = 1;
@@ -35,7 +39,7 @@ while sessionStatus == 1
         ardOutput = fscanf(s,'%c');
         
         %Rewards use same trialNumber as corresponding licks
-        if str2num(ardOutput(1)) == 0
+        if str2double(ardOutput(1)) == 0
             trialNumber = trialNumber - 1;
         end
         
@@ -48,7 +52,7 @@ while sessionStatus == 1
     end
     
     [~,~,keyCode] = KbCheck;
-    if sum(keyCode) == 1 || trialNumber > 400
+    if sum(keyCode) == 1 || trialNumber > 10000
         if trialNumber > 400 || strcmp(KbName(keyCode),'ESCAPE');
             break
         end

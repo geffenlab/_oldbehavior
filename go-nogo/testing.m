@@ -31,17 +31,20 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
+dbProbs = [.5 ([.1 .2 .2 .2 .3]./2)];
+%[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
 %Preallocate stimulus package
 stim = cell(length(nd),length(samp)+1);
 events = cell(length(nd),1);
 disp('Building stimuli...');
+
+% Build Stimuli
 for i = 1:length(nd)
     %column 1 noise only
     [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
-    %columns 2:end
+    %columns 2:end signal decreases in intensity
     for j = 1:length(samp)
         stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
@@ -214,8 +217,8 @@ while 1
     end
 end
 
-save(sprintf('%s.mat',params.fn),'ts','trialType','params');
-[f,pC] = plotPerformance(ts,trialType);
+save(sprintf('%s_testing.mat',params.fn),'ts','trialType','params');
+[f,pC] = plotPerformance(ts,ttype);
 [h,~] = Psychometric_Curve(ts,trialType,params.fn);
 fprintf('%g%% CORRECT\n',pC*100);
 print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');

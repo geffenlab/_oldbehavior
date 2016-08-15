@@ -1,5 +1,5 @@
 function [h,psychCurve] = Psychometric_Curve(ts,trialType,fn)
-
+% For fitting: http://davehunter.wp.st-andrews.ac.uk/2015/04/12/fitting-a-psychometric-function/#2
 t = 1:length(ts);
 dbSteps = linspace(0,-20,5);
 

@@ -177,7 +177,7 @@ while 1
     end
 end
 
-save(sprintf('%s.mat',params.fn),'ts','trialType','params');
+save(sprintf('%s_training.mat',params.fn),'ts','trialType','params');
 [f,pC] = plotPerformance(ts,trialType);
 fprintf('%g%% CORRECT\n',pC*100);
 print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');

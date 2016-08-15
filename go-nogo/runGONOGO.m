@@ -8,12 +8,11 @@ clearvars -except ID stage
         stage = 0;
     end
     if nargin < 1
-        ID = 999;
+        ID = 'CA999';
     end
     
     % directory stuff:
-    params.ID       = ID;
-    params.IDstr    = sprintf('CA%03d',ID);
+    params.IDstr    = ID;
     params.IDsess   = [params.IDstr '_' datestr(now,'yymmddHHMM')];
     params.base     = pwd;
     params.data     = [pwd filesep 'data' filesep params.IDstr];
@@ -44,7 +43,6 @@ clearvars -except ID stage
     params.noiseA   = 1;
     params.rampD    = .05;
     
-    
     % task parameters
     params.holdD    = 1.5;
     params.rewardD  = 0.03;
@@ -64,6 +62,9 @@ clearvars -except ID stage
             case 2
                 disp('RUNNING TESTING');
                 Testing(params);
+            case 3
+                disp('RUNNING VARIABLE NOISE');
+                VariableNoise(params);
         end
         cnt = cnt + 1;
     end
