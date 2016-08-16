@@ -1,7 +1,8 @@
-function [h,psychCurve] = Psychometric_Curve(ts,trialType,fn)
+function [h,psychCurve] = Psychometric_Curve(ts,trialType,params)
 % For fitting: http://davehunter.wp.st-andrews.ac.uk/2015/04/12/fitting-a-psychometric-function/#2
 t = 1:length(ts);
-dbSteps = linspace(0,-20,5);
+dbSteps = params.dB;
+fn = params.fn;
 
 resp = zeros(1,length(ts));
 hit = zeros(1,length(ts));

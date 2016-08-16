@@ -31,7 +31,7 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.5 ([.1 .2 .2 .2 .3]./2)];
+dbProbs = [.5 ([.3 .2 .2 .2 .1]./2)];
 %[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
 %Preallocate stimulus package
@@ -219,7 +219,7 @@ end
 
 save(sprintf('%s_testing.mat',params.fn),'ts','trialType','params');
 [f,pC] = plotPerformance(ts,ttype);
-[h,~] = Psychometric_Curve(ts,trialType,params.fn);
+[h,~] = Psychometric_Curve(ts,trialType,params);
 fprintf('%g%% CORRECT\n',pC*100);
 print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
 print(h,sprintf('%s_psychCurve.png',params.fn),'-dpng','-r300');
