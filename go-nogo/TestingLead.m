@@ -1,4 +1,4 @@
-function Testing(params)
+function TestingLead(params)
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
@@ -31,8 +31,7 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.4 .4 .05 .05 .05 .05];
-%[.5 ([.3 .2 .2 .2 .1]./2)];
+dbProbs = [.5 ([.3 .2 .2 .2 .1]./2)];
 %[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
 %Preallocate stimulus package
@@ -67,6 +66,7 @@ lickCount           = [];
 disp(' ');
 %%Task
 while 1
+
     
     switch taskState
         
@@ -203,6 +203,13 @@ while 1
                 stop(n)
             end
             taskState = 0;
+            
+            % Compute moving average
+            % Do training until 80% accurate
+            if acc > .8
+            else
+                dbProbs = [.5 ([.3 .2 .2 .2 .1]./2)];
+            end
     end
     
     [~,~,keyCode] = KbCheck;

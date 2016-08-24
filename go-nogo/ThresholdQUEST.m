@@ -31,8 +31,7 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.4 .4 .05 .05 .05 .05];
-%[.5 ([.3 .2 .2 .2 .1]./2)];
+dbProbs = [.5 ([.3 .2 .2 .2 .1]./2)];
 %[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
 %Preallocate stimulus package
@@ -50,6 +49,15 @@ for i = 1:length(nd)
         stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
 end
+
+% Start QUEST routine
+tGuess = 55;
+tGuessSD = 10;
+pThreshold=0.5;
+beta=.2;delta=.01;gamma=.01;
+q=QuestCreate(tGuess,tGuessSD,pThreshold,beta,delta,gamma,[],20);
+q.normalizePdf=1; % This adds a few ms per call to QuestUpdate, but otherwise the pdf will underflow after about 1000 trials.
+plot(q.x2, q.p2)
 
 disp(' ');
 disp('Press any key to start TESTING...');

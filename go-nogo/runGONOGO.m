@@ -37,7 +37,7 @@ delete(instrfindall)
     params.toneF    = 10e3;
     params.toneD    = 1;
     params.noiseD   = [0 .1 .5 1 2];
-    params.dbSteps  = linspace(-5,-25,5); % linspace(0,-20,5)
+    params.dbSteps  = linspace(-5,-25,5); %linspace(0,-20,5);
     params.dB       = 70 + params.dbSteps;
     params.amp70    = .1;
     params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
