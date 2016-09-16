@@ -170,7 +170,7 @@ while 1
             break
         end
     end
-    if t > 1000
+    if t > 2000
         fprintf(fn,'MAX_TRIALS');
         disp('Max trials reached...');
         break;
