@@ -177,10 +177,12 @@ while 1
     end
 end
 
-save(sprintf('%s_training.mat',params.fn),'ts','trialType','params');
-[f,pC] = plotPerformance(ts,trialType);
-fprintf('%g%% CORRECT\n',pC*100);
-print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+if t > 10
+    save(sprintf('%s_training.mat',params.fn),'ts','trialType','params');
+    [f,pC] = plotPerformance(ts,trialType);
+    fprintf('%g%% CORRECT\n',pC*100);
+    print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+end
 fclose(fn);
 delete(s);
 pause

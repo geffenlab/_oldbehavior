@@ -65,7 +65,7 @@ delete(instrfindall)
                 Testing(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
-                VariableNoise(params);
+                VariableNoiseThreshold(params);
         end
         cnt = cnt + 1;
     end

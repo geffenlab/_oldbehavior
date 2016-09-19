@@ -28,7 +28,7 @@ end
 fit = psychometricFit(fliplr(respSum(2:end)),fliplr(reps(2:end)), ...
                       fliplr(params.dB));
 
-figure;
+h = figure;
 hold on
 plot(fit.x,fit.y,'k','LineWidth',2);
 plot(min(dbSteps)-5, hr(1),'.k','MarkerSize',30);
