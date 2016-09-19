@@ -31,7 +31,7 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.4 .4 .05 .05 .05 .05];
+dbProbs = [.4 .2 .2 .05 .05 .05 .05];
 %[.5 ([.3 .2 .2 .2 .1]./2)];
 %[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
