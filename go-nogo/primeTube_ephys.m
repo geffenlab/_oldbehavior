@@ -2,7 +2,7 @@ function primeTube(port)
 delete(instrfindall);
 KbName('UnifyKeyNames');
 
-hexPath = [pwd '\_hex\primeTube.ino.hex'];
+hexPath = 'C:\Users\geffen-behaviour2\Documents\GitHub\behavior\go-nogo\_hex\primeTube.ino.hex';
 [status, cmdOut] = loadArduinoSketch(port,hexPath);
 cmdOut
 

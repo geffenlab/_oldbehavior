@@ -19,7 +19,7 @@ varvect = [params.holdD params.rewardD];
 fprintf(s,'%f %f ',varvect);
 
 %Other Variables
-trialNumber = 0;
+trialNumber = 1;
 sessionStatus = 1;
 inputType = {'REWARD','LICK'};
 disp(' ')
@@ -32,28 +32,24 @@ while sessionStatus == 1
     x = s.bytesAvailable;
     
     if x > 1
-        %Increase trial count
-        trialNumber = trialNumber + 1;
         
         %Read arduino's serial output
         ardOutput = fscanf(s,'%c');
-        
-        %Rewards use same trialNumber as corresponding licks
-        if str2double(ardOutput(1)) == 0
-            trialNumber = trialNumber - 1;
-        end
         
         %Display variables and command
         inputPrint = inputType{(str2double(ardOutput(1))+1)};
         ts = str2double(ardOutput(3:end));
         disp(sprintf('%03d %d %s',trialNumber,ts,inputPrint))
         fprintf(fn,'%03d %d %s\n',trialNumber,ts,inputPrint);
-        
+        if strcmp(inputPrint,'REWARD')
+            %Increase trial count
+            trialNumber = trialNumber + 1;
+        end
     end
     
     [~,~,keyCode] = KbCheck;
     if sum(keyCode) == 1 || trialNumber > 10000
-        if trialNumber > 400 || strcmp(KbName(keyCode),'ESCAPE');
+        if trialNumber > 10000 || strcmp(KbName(keyCode),'ESCAPE');
             break
         end
     end
