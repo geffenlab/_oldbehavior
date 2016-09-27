@@ -1,6 +1,5 @@
 function VariableNoiseThreshold(params)
 
-threshold = input('Specify the threshold level of the tone in dB: ');
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
@@ -22,6 +21,7 @@ varvect = [params.holdD params.rewardD params.respD params.timeoutD];
 fprintf(s,'%f %f %f %f ',varvect);
 
 % Change parameters to reflect stimuli played here
+threshold = input('Specify the threshold level of the tone in dB: ');
 params.dbSteps  = [params.dbSteps(1) threshold-70];
 params.dB       = 70 + params.dbSteps;
 params.amp70    = .1;

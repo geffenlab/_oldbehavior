@@ -182,10 +182,11 @@ if t > 10
     [f,pC] = plotPerformance(ts,trialType);
     fprintf('%g%% CORRECT\n',pC*100);
     print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+    pause
 end
 fclose(fn);
 delete(s);
-pause
+
 
 
 
