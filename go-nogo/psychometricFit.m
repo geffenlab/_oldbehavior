@@ -21,12 +21,3 @@ fit.y = PF(pFit,fit.x);
 fit.func = PF;
 fit.params = pFit;
 fit.thresh = PF(pFit,.5,'inverse');
-
-
-
-
-
-
-
-
-    keyboard
