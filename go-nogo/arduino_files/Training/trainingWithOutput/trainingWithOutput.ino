@@ -83,8 +83,8 @@ void loop() {
           }
           if (micros() - delayStart > ((long)(patientWait * (float)1000000) + randNumber)) {
             taskState = 1;
-            t = micros();
-            Serial.println(t);
+            // t = micros();
+            Serial.println(micros());
             //rewardStatus = 0;
             break;
           }
