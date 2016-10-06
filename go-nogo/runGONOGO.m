@@ -46,7 +46,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = 0.03;
+    params.rewardD  = .08; % duration valve stays open for water
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
@@ -62,7 +62,7 @@ delete(instrfindall)
                 Training(params);
             case 2
                 disp('RUNNING TESTING');
-                Testing(params);
+                testing(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
                 VariableNoiseThreshold(params);

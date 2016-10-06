@@ -18,17 +18,17 @@ int stimulusMarker;
 int proceed;
 
 // Time Variables
-long randNumber;
-long delayStart;
-long lastReward;
-long t;
-long responseStart;
-long rewardTimer;
-long delayTimer;
-long rewardEnd;
-long lastDebounceTime = 0;      // the last time the output pin was toggled
-long debounceDelay = 20000;     // the debounce time; increase if the output flickers
-long tEnd;
+unsigned long randNumber;
+unsigned long delayStart;
+unsigned long lastReward;
+unsigned long t;
+unsigned long responseStart;
+unsigned long rewardTimer;
+unsigned long delayTimer;
+unsigned long rewardEnd;
+unsigned long lastDebounceTime = 0;      // the last time the output pin was toggled
+unsigned long debounceDelay = 20000;     // the debounce time; increase if the output flickers
+unsigned long tEnd;
 
 // Float Variables from Matlab
 float rewardDur = 0;

@@ -3,6 +3,9 @@ KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
+% Add palamedes toolbox path for psychometric fits
+addpath(genpath('Palamedes'));
+
 %Load corresponding Arduino sketch
 hexPath = [params.hex filesep 'Testing.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);

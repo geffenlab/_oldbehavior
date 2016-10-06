@@ -1,4 +1,4 @@
-function [h,psychCurve] = Psychometric_Curve_CA(ts,trialType,params)
+function [h,fit] = Psychometric_Curve_CA(ts,trialType,params)
 % For fitting: http://davehunter.wp.st-andrews.ac.uk/2015/04/12/fitting-a-psychometric-function/#2
 t = 1:length(ts);
 dbSteps = params.dB;
@@ -24,6 +24,9 @@ for i = 1:nConditions
     hr(i) = respSum(i)/reps(i);
 end
 
+% Fix the first value to reflect the actual false alarm rate
+hr(1) = 1-(sum(cr) / sum(tType == 0));
+
 % Fit the psychometric function
 fit = psychometricFit(fliplr(respSum(2:end)),fliplr(reps(2:end)), ...
                       fliplr(params.dB));
@@ -41,6 +44,5 @@ xlabel('dbSteps');
 ylabel('pHit');
 ylim([0 1]);
 set(gca,'XTick',fliplr(dbSteps));
-
 
 
