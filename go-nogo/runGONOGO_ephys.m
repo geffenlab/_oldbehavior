@@ -33,7 +33,7 @@ delete(instrfindall)
     
     % stimulus parameters
     params.filt     = load('160831-filter-ephys-behavior');
-    %params.filt     = params.filt.filt;
+    params.filt     = params.filt.FILT;
     params.toneF    = 10e3;
     params.toneD    = 1;
     params.noiseD   = [0 .1 .5 1 2];
@@ -42,7 +42,7 @@ delete(instrfindall)
     params.amp70    = .1;
     params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
     params.noiseA   = 1;
-    params.rampD    = .05;
+    params.rampD    = .002;
     
     % task parameters
     params.holdD    = 1.5;
@@ -56,13 +56,13 @@ delete(instrfindall)
         switch stage(cnt)
             case 0
                 disp('RUNNING HABITUATION');
-                Habituation(params);
+                Habituation_ephys(params);
             case 1
                 disp('RUNNING TRAINING');
                 Training_ephys(params);
             case 2
                 disp('RUNNING TESTING');
-                Testing(params);
+                Testing_ephys(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
                 VariableNoiseThreshold(params);
