@@ -1,11 +1,10 @@
-function VariableNoiseThreshold(params)
-
+function VariableNoise(params)
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'testing.ino.hex'];
+hexPath = [params.hex filesep 'Testing.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -21,7 +20,6 @@ varvect = [params.holdD params.rewardD params.respD params.timeoutD];
 fprintf(s,'%f %f %f %f ',varvect);
 
 % Change parameters to reflect stimuli played here
-threshold = input('Specify the threshold level of the tone in dB: ');
 params.dbSteps  = [params.dbSteps(1) threshold-70];
 params.dB       = 70 + params.dbSteps;
 params.amp70    = .1;
@@ -31,13 +29,14 @@ params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD;
+nd = params.noiseD + params.toneD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.4 .4 .2];
+dbProbs = [.75 .25];
 
+keyboard
 
 %Preallocate stimulus package
 stim = cell(length(nd),length(samp)+1);
@@ -45,11 +44,11 @@ events = cell(length(nd),1);
 fprintf('\nBuilding stimuli...\n');
 for i = 1:length(nd)
     %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,nd(i),0,namp,rd,params.filt);
+    [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
     %columns 2:end
     for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
+        stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
 end
 

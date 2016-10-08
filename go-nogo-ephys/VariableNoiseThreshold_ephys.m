@@ -1,13 +1,12 @@
-function VariableNoiseThreshold(params)
+function VariableNoiseThreshold_ephys(params)
 
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'testing.ino.hex'];
+hexPath = [params.hex filesep 'testingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
-cmdOut
 disp('STARTING SERIAL');
 s = setupSerial(params.comPort);
 n = params.n;

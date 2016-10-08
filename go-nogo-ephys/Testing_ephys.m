@@ -1,11 +1,10 @@
-function VariableNoiseThreshold(params)
-
+function Testing_ephys(params)
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'testing.ino.hex'];
+hexPath = [params.hex filesep 'testingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -13,19 +12,15 @@ s = setupSerial(params.comPort);
 n = params.n;
 
 % Open text file
-fileGoto = [params.fn '_variableNoise.txt'];
+fileGoto = [params.fn '_testing.txt'];
 fn = fopen(fileGoto,'w');
 
 %Send setup() variables to arduino
 varvect = [params.holdD params.rewardD params.respD params.timeoutD];
 fprintf(s,'%f %f %f %f ',varvect);
 
-% Change parameters to reflect stimuli played here
-threshold = input('Specify the threshold level of the tone in dB: ');
-params.dbSteps  = [params.dbSteps(1) threshold-70];
-params.dB       = 70 + params.dbSteps;
-params.amp70    = .1;
-params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
+% modify params to reflect actual stimuli used
+params.noiseD = params.noiseD(1);
 
 % Make stimuli
 Fs = params.fsActual;
@@ -36,27 +31,36 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
-dbProbs = [.4 .4 .2];
+dbProbs = [.4 .2 .2 .05 .05 .05 .05];
+%[.5 ([.3 .2 .2 .2 .1]./2)];
+%[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
+params.ndProbs = durProbs;
+params.saProbs = dbProbs;
 
 %Preallocate stimulus package
 stim = cell(length(nd),length(samp)+1);
 events = cell(length(nd),1);
-fprintf('\nBuilding stimuli...\n');
+disp('Building stimuli...');
+
+% Build Stimuli
 for i = 1:length(nd)
     %column 1 noise only
     [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
-    %columns 2:end
+    %columns 2:end signal decreases in intensity
     for j = 1:length(samp)
         stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
 end
 
+keyboard
+
 disp(' ');
-disp('Press any key to start VARIABLE NOISE...');
+disp('Press any key to start TESTING...');
 disp(' ');
 pause;
+
 
 % Preallocate some variables
 t                   = 0;
@@ -219,12 +223,14 @@ while 1
     end
 end
 
-save(sprintf('%s_variableNoise.mat',params.fn),'ts','trialType','params');
-[f,pC] = plotPerformance(ts,ttype);
-%[h,~] = Psychometric_Curve(ts,trialType,params.fn);
-fprintf('%g%% CORRECT\n',pC*100);
-print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
-%print(h,sprintf('%s_psychCurve.png',params.fn),'-dpng','-r300');
+if t > 10
+    save(sprintf('%s_testing.mat',params.fn),'ts','trialType','params');
+    [f,pC] = plotPerformance(ts,ttype);
+    [h,~] = Psychometric_Curve_CA(ts,trialType,params);
+    fprintf('%g%% CORRECT\n',pC*100);
+    print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
+    print(h,sprintf('%s_psychCurve.png',params.fn),'-dpng','-r300');
+end
 fclose(fn);
 delete(s);
 pause
