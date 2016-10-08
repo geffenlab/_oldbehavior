@@ -46,7 +46,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = .08; % duration valve stays open for water
+    params.rewardD  = .06; % duration valve stays open for water
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
