@@ -25,7 +25,7 @@ delete(instrfindall)
     end
     
     % start nidaq
-    params.comPort  = 'COM6';
+    params.comPort  = 'COM8';
     params.fsTarget = 400e3;
     disp('STARTING NIDAQ');
     [params.n, params.fsActual] = setupNI_analog([0 1], params.fsTarget);
@@ -46,7 +46,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = .06; % duration valve stays open for water
+    params.rewardD  = .04; % duration valve stays open for water
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
