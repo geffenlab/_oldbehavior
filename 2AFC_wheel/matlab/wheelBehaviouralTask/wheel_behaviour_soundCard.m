@@ -1,22 +1,15 @@
 % Behaviour task with wheel response
-function wheel_behaviour(dev)
+function wheel_behaviour_soundCard
 
 
-if strcmp('nidaq',dev)
-% Create nidaq session
-nidaq = daq.createSession('ni');
-addAnalogOutputChannel(nidaq,'Dev1',0,'Voltage');
-addAnalogOutputChannel(nidaq,'Dev1',1,'Voltage');
-fs=250000;
-nidaq.Rate = fs;
-% s.DurationInSeconds = 10;
-else
-    InitializePsychSound(1);
-    sc = PsychPortAudio('Open', [], 1, 3, 192e3, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
-end
- taskState = 2;
+InitializePsychSound(1);
+fs=192000;
+sc = PsychPortAudio('Open', [], 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
 
- s=setupSerial('COM8'); % windows
+
+taskState = 2;
+
+s=setupSerial('COM8'); % windows
 %% Delete session
 % stop(nidaq)
 % nidaq.release()
@@ -97,9 +90,10 @@ while wb.run==1
             % PRESENT SOUND HERE
             outputSignal1 = [rand(fs*1,1)/10; zeros(50,1)];
             outputSignal2 = [ones(fs*1,1)*3; zeros(50,1)];
-            queueOutputData(nidaq,[outputSignal1 outputSignal2]);
+            PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
+           
             % Start presentation
-            [data, time] = startForeground(nidaq);
+            t1 = PsychPortAudio('Start', sc, 1); % 'Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0]
             
             % Wait for arduino to send info
             arduinoChat=s.bytesAvailable;
@@ -149,8 +143,7 @@ while wb.run==1
 end
 
 %% Close everything
-fclose(s);
-stop(nidaq);
-nidaq.release();
-delete(nidaq);
+PsychPortAudio('Stop', sc, 0); % 'Stop', pahandle [,waitForEndOfPlayback=0] 
+PsychPortAudio('close',sc);
+delete(sc);
 disp('Session ended');

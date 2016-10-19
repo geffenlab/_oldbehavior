@@ -22,7 +22,7 @@ function varargout = mouse_2AFC_wheel_GUI(varargin)
 
 % Edit the above text to modify the response to help mouse_2AFC_wheel_GUI
 
-% Last Modified by GUIDE v2.5 07-Jun-2016 14:32:44
+% Last Modified by GUIDE v2.5 19-Oct-2016 14:01:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,7 +83,11 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global wb
 wb.run=1;
-wheel_behaviour;
+if strcmp(wb.dev,'nidaq')
+    wheel_behaviour;
+else
+    wheel_behaviour_soundCard;
+end
 
 
 % --- Executes on button press in pushbutton2. STOP BUTTON
@@ -93,3 +97,22 @@ function pushbutton2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global wb
 wb.run=2;
+
+
+
+% --- Executes on selection change in popupmenu1.
+function popupmenu1_Callback(hObject, eventdata, handles)
+global wb
+contents = cellstr(get(hObject,'String'));
+wb.dev=contents{get(hObject,'Value')};
+
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu1_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+global wb
+contents = cellstr(get(hObject,'String'));
+wb.dev=contents{get(hObject,'Value')};
