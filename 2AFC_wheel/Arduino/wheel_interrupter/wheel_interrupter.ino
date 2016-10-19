@@ -3,6 +3,7 @@
 //these pins can not be changed 2/3 are special pins
 int encoderPin1 = 2;
 int encoderPin2 = 3;
+int solenoidOut = 9;
 
 volatile int lastEncoded = 0;
 volatile long encoderValue = 0;
@@ -52,6 +53,7 @@ void setup() {
 
   pinMode(encoderPin1, INPUT);
   pinMode(encoderPin2, INPUT);
+  pinMode(solenoidOut, OUTPUT);
 
   digitalWrite(encoderPin1, HIGH); //turn pullup resistor on
   digitalWrite(encoderPin2, HIGH); //turn pullup resistor on
@@ -155,9 +157,14 @@ void loop() {
         //       Serial.println(oldRotaryPos);
         //        Serial.println(rotaryPos);
         if ( trialType == 1) {
+          //INCORRECT TRIAL
           Serial.println (0, DEC);
           bstate = 5; // TIMEOUT
         } else {
+          //CORRECT TRIAL
+          digitalWrite(solenoidOut, HIGH); //open the solenoid
+          delay(100);
+          digitalWrite(solenoidOut, LOW); //close the solenoid
           Serial.println (1, DEC);
           Serial.println("start");
           bstate = 1; // RETURN TO BEGINNING
@@ -166,10 +173,15 @@ void loop() {
       } else {
         //    Serial.println(oldRotaryPos);
         //     Serial.println(rotaryPos);
-        if ( trialType == 2) {
+        if ( trialType == 2) { 
+          //INCORRECT TRIAL
           Serial.println (0, DEC);
           bstate = 5; // TIMEOUT
         } else {
+          //CORRECT TRIAL
+          digitalWrite(solenoidOut, HIGH); //open the solenoid
+          delay(100);
+          digitalWrite(solenoidOut, LOW); //close the solenoid
           Serial.println (1, DEC);
           Serial.println("start");
           bstate = 1; // RETURN TO BEGINNING

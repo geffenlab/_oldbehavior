@@ -10,7 +10,7 @@ fs=250000;
 nidaq.Rate = fs;
 % s.DurationInSeconds = 10;
 
- s=setupSerial('COM5'); % windows
+ s=setupSerial('COM8'); % windows
  taskState = 2;
 
 
