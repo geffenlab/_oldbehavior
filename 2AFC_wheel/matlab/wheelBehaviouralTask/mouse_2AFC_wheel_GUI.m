@@ -22,7 +22,7 @@ function varargout = mouse_2AFC_wheel_GUI(varargin)
 
 % Edit the above text to modify the response to help mouse_2AFC_wheel_GUI
 
-% Last Modified by GUIDE v2.5 19-Oct-2016 14:01:48
+% Last Modified by GUIDE v2.5 19-Oct-2016 16:02:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,7 +58,8 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
-
+global wb
+wb.gotMouse = 0;
 
 
 % UIWAIT makes mouse_2AFC_wheel_GUI wait for user response (see UIRESUME)
@@ -76,31 +77,34 @@ function varargout = mouse_2AFC_wheel_GUI_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in pushbutton1. START BUTTON
+% START BUTTON
 function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 global wb
-wb.run=1;
-if strcmp(wb.dev,'nidaq')
-    wheel_behaviour;
+if wb.gotMouse==0
+    set(handles.text5,'String','Enter mouse number')
 else
-    wheel_behaviour_soundCard;
+    set(handles.text5,'String','Running behaviour')
+    wb.run=1;
+    if strcmp(wb.dev,'nidaq')
+        wheel_behaviour;
+    else
+        wheel_behaviour_soundCard;
+    end
 end
 
 
-% --- Executes on button press in pushbutton2. STOP BUTTON
+% STOP BUTTON
 function pushbutton2_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global wb
 wb.run=2;
+close all
 
 
 
-% --- Executes on selection change in popupmenu1.
+% soundcard/nidaq
 function popupmenu1_Callback(hObject, eventdata, handles)
 global wb
 contents = cellstr(get(hObject,'String'));
@@ -108,7 +112,7 @@ wb.dev=contents{get(hObject,'Value')};
 
 
 
-% --- Executes during object creation, after setting all properties.
+% soundcard/nidaq
 function popupmenu1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
@@ -116,3 +120,37 @@ end
 global wb
 contents = cellstr(get(hObject,'String'));
 wb.dev=contents{get(hObject,'Value')};
+
+
+% MOUSE NAME
+function edit1_Callback(hObject, eventdata, handles)
+global wb
+wb.mouse = get(hObject,'String');
+wb.gotMouse = 1;
+
+
+
+% --- Executes during object creation, after setting all properties.
+function edit1_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes when selected object is changed in uibuttongroup3.
+function uibuttongroup3_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uibuttongroup3 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global wb
+switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
+    case 'radiobutton3'
+        display('habituation');
+        wb.behType = 1;
+    case 'radiobutton2'
+        display('training');
+        wb.behType = 2;
+    case 'radiobutton4'
+        display('testing');
+        wb.behType = 3;
+end
