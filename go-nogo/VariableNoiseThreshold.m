@@ -45,11 +45,11 @@ events = cell(length(nd),1);
 fprintf('\nBuilding stimuli...\n');
 for i = 1:length(nd)
     %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,nd(i),0,namp,rd,params.filt);
+    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,1+nd(i),0,namp,rd,params.filt);
     
     %columns 2:end
     for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
+        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,1+nd(i),samp(j),namp,rd,params.filt);
     end
 end
 

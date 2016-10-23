@@ -21,12 +21,12 @@ signalOnly = [signal zeros(1,length(noiseOnly)-length(signal))];
 signalF = filter(Filt,1,signalOnly);
 stim = signalF + noiseF;
 
-clf
-hold on
-plot(noiseOnly)
-plot(signalOnly)
-hold off
-keyboard
+% clf
+% hold on
+% plot(noiseOnly)
+% plot(signalOnly)
+% hold off
+% keyboard
 
 % Add event pulses
 pulseWidth = .01;
