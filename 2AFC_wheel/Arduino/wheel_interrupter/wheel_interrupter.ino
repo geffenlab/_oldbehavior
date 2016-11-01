@@ -1,9 +1,11 @@
 //From bildr article: http://bildr.org/2012/08/rotary-encoder-arduino/
 
+// ASSIGN PINS
 //these pins can not be changed 2/3 are special pins
 int encoderPin1 = 2;
 int encoderPin2 = 3;
 int solenoidOut = 9;
+int soundCardInput = 5;       // 2nd channel from sound card
 
 volatile int lastEncoded = 0;
 volatile long encoderValue = 0;
@@ -16,7 +18,7 @@ int lastLSB = 0;
 unsigned long time;
 int val;
 int bstate = 0;             // defines which behavioural state you are in
-int soundCardInput = 5;       // 2nd channel from sound card
+
 int sc = LOW;
 long rotaryPos = 0;
 int rotaryLastStateA = LOW;
@@ -156,11 +158,11 @@ void loop() {
       if (rotaryPos < oldRotaryPos) {
         //       Serial.println(oldRotaryPos);
         //        Serial.println(rotaryPos);
-        if ( trialType == 1) {
+        if (trialType == 49) {
           //INCORRECT TRIAL
           Serial.println (0, DEC);
           bstate = 5; // TIMEOUT
-        } else {
+        } else if (trialType == 50) {
           //CORRECT TRIAL
           digitalWrite(solenoidOut, HIGH); //open the solenoid
           delay(100);
@@ -173,11 +175,11 @@ void loop() {
       } else {
         //    Serial.println(oldRotaryPos);
         //     Serial.println(rotaryPos);
-        if ( trialType == 2) { 
+        if ( trialType == 50) { 
           //INCORRECT TRIAL
           Serial.println (0, DEC);
           bstate = 5; // TIMEOUT
-        } else {
+        } else if (trialType == 49) {
           //CORRECT TRIAL
           digitalWrite(solenoidOut, HIGH); //open the solenoid
           delay(100);
