@@ -12,6 +12,8 @@ trialNumber = 0;
 newTrial = 1;
 KbName('UnifyKeyNames');
 
+fid = fopen('data.txt','a+');
+
 %% LOAD SOUND STIMULI AND TELL ARDUINO TRIAL TYPE
 
 tt = [];
@@ -54,8 +56,8 @@ while ~flag
         % PRESENT THE SOUND AND RECEIVE SOUND OFFSET
         
         % PRESENT SOUND HERE
-        outputSignal1 = [rand(fs*3,1)/10; zeros(50,1)]';
-        outputSignal2 = [ones(fs*3,1)*3; zeros(50,1)]';
+        outputSignal1 = [rand(fs*3,1)/10; zeros(100,1)]';
+        outputSignal2 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
         PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
         
         % Start presentation
@@ -67,7 +69,7 @@ while ~flag
         
         soundOffset = serialRead(s);
         disp(['sound offset received: ' num2str(soundOffset)])
-        disp(['Difference: ' num2str(soundOffset-soundOnset)])
+%         disp(['Difference: ' num2str(soundOffset-soundOnset)])
         %         fscanf(s,'%s')
         
         % RECEIVE INPUT FROM ARDUINO WITH RESPONSE TIME AND IF TRIAL CORRECT OR NOT
@@ -84,8 +86,8 @@ while ~flag
             newTrial = 0;
         end
         
-        logWheelTrial_WL(trialNumber, correctionTrial, trialType, mouseStillTime,...
-            soundOnset,soundOffset,responseTime,responseOutcome)
+        logWheelTrial_WL(fid,trialNumber, correctionTrial, trialType, str2double(mouseStillTime),...
+            str2double(soundOnset),str2double(soundOffset),str2double(responseTime),str2double(responseOutcome))
     end
     
     % Exit statement
@@ -96,6 +98,10 @@ while ~flag
         end
     end
 end
+
+delete(instrfindall)
+fclose(fid)
+clear all
 
 
 

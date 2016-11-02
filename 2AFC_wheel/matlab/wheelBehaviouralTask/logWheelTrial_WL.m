@@ -1,4 +1,4 @@
-function logWheelTrial_WL(trialNumber, correctionTrial, trialType, mouseStillTime,...
+function logWheelTrial_WL(fid,trialNumber, correctionTrial, trialType, mouseStillTime,...
     soundOnset,soundOffset,responseTime,responseOutcome)
 
 
@@ -12,6 +12,6 @@ trialData = [trialNumber, correctionTrial, trialType, mouseStillTime,...
  data=data;
 
  
- % fprintf(fid,'%03d %i %i %g %g %g %g %i\n',trialData); 
+fprintf(fid,'\n%03d\t%i\t%i\t%g\t%g\t%g\t%g\t%i',trialData); 
  
- save('data.mat','headers','data','-append');
+%  save('data.mat','headers','data','-append');

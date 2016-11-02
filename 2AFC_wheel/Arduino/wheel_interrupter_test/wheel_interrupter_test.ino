@@ -125,16 +125,16 @@ void loop() {
 
       sc = digitalRead(soundCardInput); // read the input from sound card
 
-      if (sc == LOW) { // if it is low, wait for it to be high
-
-        sc = digitalRead(soundCardInput);
-
-      } else { // once high, wait for it to go low again! i.e. wait for the sound to finish
+      if (sc == HIGH) { // if it is low, wait for it to be high
         time = micros();
         Serial.println(time);
 
         while (sc == HIGH) {
           sc = digitalRead(soundCardInput);
+        }
+
+        while (sc == LOW) { // if it is low, wait for it to be high
+        sc = digitalRead(soundCardInput);     
         }
 
         time = micros();
