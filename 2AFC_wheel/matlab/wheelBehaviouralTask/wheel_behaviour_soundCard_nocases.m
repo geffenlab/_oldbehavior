@@ -1,6 +1,6 @@
 % Behaviour task with wheel response
 function wheel_behaviour_soundCard_nocases
-
+% run wheel_interruptor_test
 
 InitializePsychSound(1);
 fs=192000;
