@@ -98,8 +98,10 @@ function pushbutton2_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global wb
-wb.run=2;
+PsychPortAudio('Stop', sc, 0); % 'Stop', pahandle [,waitForEndOfPlayback=0] 
+PsychPortAudio('close',sc);
+delete(sc);
+disp('Session ended');
 close all
 
 

@@ -22,11 +22,11 @@ end
 
 fprintf(s,'%c','a') % send the a back to the arduino
 disp('Serial connection established'); %uiwait(mbox);
-% % fscanf(s,'%u');
-ind=1; readings=[];
-x=s.bytesAvailable;
-
-while x>0
-  fscanf(s,'%s');
-    x=s.bytesAvailable;
-end
+% % % fscanf(s,'%u');
+% ind=1; readings=[];
+% x=s.bytesAvailable;
+% 
+% while x>0
+%   fscanf(s,'%s');
+%     x=s.bytesAvailable;
+% end

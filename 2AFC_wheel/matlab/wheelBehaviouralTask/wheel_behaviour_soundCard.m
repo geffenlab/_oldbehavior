@@ -88,8 +88,8 @@ while wb.run==1
             
             
             % PRESENT SOUND HERE
-            outputSignal1 = [rand(fs*1,1)/10; zeros(50,1)]';
-            outputSignal2 = [ones(fs*1,1)*3; zeros(50,1)]';
+            outputSignal1 = [rand(fs*3,1)/10; zeros(50,1)]';
+            outputSignal2 = [ones(fs*3,1)*3; zeros(50,1)]';
             PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
            
             % Start presentation
