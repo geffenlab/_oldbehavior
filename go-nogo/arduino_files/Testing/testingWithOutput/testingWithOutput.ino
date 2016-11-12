@@ -1,8 +1,9 @@
 // Pin Variables
 const int lickPin           = 2;
-const int waterOut          = 4;
 const int waterPin          = 5;
 const int soundPin          = 3;
+const int lickOut           = 8;
+const int waterOut          = 9;
 
 // State Variables
 int taskState               = 0;
@@ -40,8 +41,9 @@ void setup()
 {
   pinMode(lickPin, INPUT);
   pinMode(waterPin, OUTPUT);
-  pinMode(waterOut, OUTPUT);
   pinMode(soundPin, INPUT);
+  pinMode(lickOut, OUTPUT);
+  pinMode(waterOut, OUTPUT);
 
   Serial.begin(9600);
   Serial.println("Starting...");
@@ -132,6 +134,7 @@ void loop() {
 
         if ((micros() - lastDebounceTime) > debounceDelay && lickDetect != lickState) {
           lickState = lickDetect;
+          digitalWrite(lickOut, lickState);
           if (lickState == HIGH) {
             Serial.print("L");
             Serial.println(micros());

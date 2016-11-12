@@ -1,13 +1,10 @@
-function Testing(params)
+function Testing_ephys(params)
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
-% Add palamedes toolbox path for psychometric fits
-addpath(genpath('Palamedes'));
-
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'Testing.ino.hex'];
+hexPath = [params.hex filesep 'testingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -29,7 +26,7 @@ params.noiseD = params.noiseD(1);
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD + params.toneD;
+nd = params.noiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
@@ -37,6 +34,9 @@ durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
 dbProbs = [.4 .2 .2 .05 .05 .05 .05];
 %[.5 ([.3 .2 .2 .2 .1]./2)];
 %[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
+
+params.ndProbs = durProbs;
+params.saProbs = dbProbs;
 
 %Preallocate stimulus package
 stim = cell(length(nd),length(samp)+1);
@@ -46,13 +46,15 @@ disp('Building stimuli...');
 % Build Stimuli
 for i = 1:length(nd)
     %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,params.filt);
+    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
     %columns 2:end signal decreases in intensity
     for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
+        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
 end
+
+keyboard
 
 disp(' ');
 disp('Press any key to start TESTING...');

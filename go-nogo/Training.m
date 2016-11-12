@@ -1,10 +1,10 @@
-function Training(params)
+function Training_ephys(params)
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'Training.ino.hex'];
+hexPath = [params.hex filesep 'trainingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -29,14 +29,14 @@ params.noiseD = params.noiseD(1);
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD + params.toneD;
+nd = params.noiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-% make noise
-[noise,events] = makeStimFilt(Fs,f,sd,nd,0,namp,rd,params.filt);
-% make signals and add to noise
-stim = makeStimFilt(Fs,f,sd,nd,samp,namp,rd,params.filt);
+% make tone
+offset = .25;
+tone = makeTone(Fs,f,sd,samp,nd,offset,rd,params.filt);
+tone = [tone zeros(1,.02*Fs)];
 
 disp(' ');
 disp('Press any key to start TRAINING...');
@@ -75,6 +75,9 @@ while 1
             end
             
         case 1 %generate random stimuli
+            % make new noise each time
+            [noise,events] = makeNoise(Fs,nd,namp,rd,params.filt);
+            
             trialChoice(t) = rand < 0.5;
             if t > 3 && range(trialChoice(end-3:end-1)) == 0
                 trialChoice(t) = ~trialChoice(t-1);
@@ -88,7 +91,7 @@ while 1
                 taskState = 2;
             else  %Signal, stim{2}
                 fprintf(s,'%i',1);
-                queueOutputData(n,[stim'*10 events']);
+                queueOutputData(n,[(tone+noise)'*10 events']);
                 startBackground(n)
                 trialType(t) = 1;
                 disp(sprintf('%03d 0 %i %s SIGNAL_TRIAL',t,trialType(t),ardOutput(1:end-2)));
@@ -182,11 +185,10 @@ if t > 10
     [f,pC] = plotPerformance(ts,trialType);
     fprintf('%g%% CORRECT\n',pC*100);
     print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
-    pause
 end
 fclose(fn);
 delete(s);
-
+pause
 
 
 

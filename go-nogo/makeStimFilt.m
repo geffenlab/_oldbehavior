@@ -1,23 +1,31 @@
-function [stim, events, t] = makeStimFilt(fs,f,sd,nd,samp,namp,ramp,Filt)
+function [stim, events, t] = makeStimFilt_ephys(fs,f,sd,nd,samp,namp,ramp,Filt)
 
 % Make ramp
 r = make_ramp(ramp*fs);
 
 % Make noise
-nr = [r ones(1,round(nd*fs)) fliplr(r)];
-noise = randn(1,round((nd + (2*ramp))*fs))./ sqrt(2) ./ 10;
+nr = [r ones(1,round((nd - (2*ramp))*fs)) fliplr(r)];
+noise = randn(1,length(nr))./ sqrt(2) ./ 10;
 noiseOnly = noise .* nr * namp;
-noiseF = filter(Filt,1,noiseOnly);
+noiseF = conv(noiseOnly,Filt,'same');
 
 % Make signal
-sr = [r ones(1,sd*fs) fliplr(r)];
-signal = genTone(fs,f,sd + 2*ramp,1);
+sr = [r ones(1,round((sd - (2*ramp))*fs)) fliplr(r)];
+signal = genTone(fs,f,sd,1);
 signal = signal .* sr * samp;
 
-% Combine them (assuming signal goes on at the end end)
-signalOnly = [zeros(1,length(noiseOnly)-length(signal)) signal];
-signalF = filter(Filt,1,signalOnly);
+% Combine them (assuming signal goes on at the end of preceding noise
+% and that there is at least 1s of noise at the end)
+signal = [zeros(1,round((nd-1)*fs)) signal];
+signalOnly = [signal zeros(1,length(noiseOnly)-length(signal))];
+signalF = conv(signalOnly,Filt,'same');
 stim = signalF + noiseF;
+
+% clf
+% hold on
+% plot(noiseF)
+% plot(signalF)
+% hold off
 
 % Add event pulses
 pulseWidth = .01;
