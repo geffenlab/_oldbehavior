@@ -57,16 +57,16 @@ delete(instrfindall)
         switch stage(cnt)
             case 0
                 disp('RUNNING HABITUATION');
-                Habituation_ephys(params);
+                Habituation(params);
             case 1
                 disp('RUNNING TRAINING');
-                Training_ephys(params);
+                Training(params);
             case 2
                 disp('RUNNING TESTING');
-                Testing_ephys(params);
+                Testing(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
-                VariableNoiseThreshold_ephys(params);
+                VariableNoiseThreshold(params);
         end
         cnt = cnt + 1;
     end
