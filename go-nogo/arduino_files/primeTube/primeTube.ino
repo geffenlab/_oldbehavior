@@ -14,6 +14,7 @@ void setup() {
     // Wait for matlab to send specific character to arduino
     a = Serial.read();
   }
+  Serial.println("Starting");
   Serial.flush();
 
 }
@@ -24,6 +25,7 @@ void loop() {
     if (val == 1) {
       state = !state;
       digitalWrite(valvePin, state);
+      Serial.println(state);
     }
   }
 }

@@ -26,7 +26,7 @@ unsigned long rewardTimer;
 unsigned long delayTimer;
 unsigned long rewardEnd;
 unsigned long lastDebounceTime = 0;      // the last time the output pin was toggled
-unsigned long debounceDelay = 20000;     // the debounce time; increase if the output flickers
+unsigned long debounceDelay = 7000;     // the debounce time; increase if the output flickers
 unsigned long tEnd;
 
 // Float Variables from Matlab

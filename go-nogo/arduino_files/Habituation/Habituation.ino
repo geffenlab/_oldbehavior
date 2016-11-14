@@ -11,7 +11,7 @@ long lastReward;
 // the following variables are long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 50000;    // the debounce time; increase if the output flickers
+long debounceDelay = 7000;    // the debounce time; increase if the output flickers
 
 // float variables from MATLAB (sent each session)
 float rewardDur;
