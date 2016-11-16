@@ -166,7 +166,7 @@ void loop() {
           } else if (trialType == 2) {
             //CORRECT TRIAL
             digitalWrite(solenoidOut, HIGH); //open the solenoid
-            delay(100);
+            delay(500);
             digitalWrite(solenoidOut, LOW); //close the solenoid
             Serial.println (1, DEC);
             Serial.println("start");
@@ -183,7 +183,7 @@ void loop() {
           } else if (trialType == 1) {
             //CORRECT TRIAL
             digitalWrite(solenoidOut, HIGH); //open the solenoid
-            delay(100);
+            delay(500);
             digitalWrite(solenoidOut, LOW); //close the solenoid
             Serial.println (1, DEC);
             Serial.println("start");

@@ -4,7 +4,10 @@ function wheel_behaviour_soundCard_nocases
 
 InitializePsychSound(1);
 fs=192000;
-sc = PsychPortAudio('Open', [], 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
+sc = PsychPortAudio('Open', [], 1, 3, fs, 3); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
+% Channel 1 is left speaker, 2 is right speaker and 3 is events
+status = PsychPortAudio('GetStatus', sc);
+fs = status.SampleRate; % check sample rate
 s=setupSerial('COM5'); % windows
 
 % Initialise variables:
@@ -57,8 +60,9 @@ while ~flag
         
         % PRESENT SOUND HERE
         outputSignal1 = [rand(fs*3,1)/10; zeros(100,1)]';
-        outputSignal2 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
-        PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
+        outputSignal2 = zeros(1,length(outputSignal1));
+        outputSignal3 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
+        PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2;outputSignal3]);
         
         % Start presentation
         t1 = PsychPortAudio('Start', sc, 1); % 'Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0]
