@@ -34,7 +34,7 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 % make tone
-offset = .25;
+offset = params.noiseD(1)/2 - params.toneD/2;
 tone = makeTone(Fs,f,sd,samp,nd,offset,rd,params.filt);
 tone = [tone zeros(1,.02*Fs)];
 

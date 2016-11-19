@@ -38,7 +38,7 @@ float patientWait = 2000000;
 
 // Debounce Variables
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 20000;    // the debounce time; increase if the output flickers
+long debounceDelay = 7000;    // the debounce time; increase if the output flickers
 
 void setup()
 {

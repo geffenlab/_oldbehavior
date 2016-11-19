@@ -25,7 +25,7 @@ delete(instrfindall)
     end
     
     % start nidaq
-    params.comPort  = 'COM5';
+    params.comPort  = 'COM8';
     params.fsTarget = 400e3;
     disp('STARTING NIDAQ');
     [params.n, params.fsActual] = setupNI_analog([0 1], params.fsTarget);
@@ -35,7 +35,7 @@ delete(instrfindall)
     params.filt         = load('160831-filter-ephys-behavior');
     params.filt         = params.filt.FILT;
     params.toneF        = 10e3;
-    params.toneD        = .5;
+    params.toneD        = 25e-3;
     params.baseNoiseD   = 1;
     params.noiseD       = [0 .1 .5 1 2] + params.baseNoiseD;
     params.dbSteps      = linspace(0,-25,6); %linspace(0,-20,5);
@@ -47,7 +47,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = 0.02;
+    params.rewardD  = 0.01;
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
