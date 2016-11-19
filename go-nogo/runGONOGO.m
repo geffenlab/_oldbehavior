@@ -25,7 +25,7 @@ delete(instrfindall)
     end
     
     % start nidaq
-    params.comPort  = 'COM6';
+    params.comPort  = 'COM8';
     params.fsTarget = 400e3;
     disp('STARTING NIDAQ');
     [params.n, params.fsActual] = setupNI_analog([0 1], params.fsTarget);
