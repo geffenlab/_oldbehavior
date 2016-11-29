@@ -33,10 +33,13 @@ nd = params.noiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-% make tone
-offset = params.noiseD(1)/2 - params.toneD/2;
-tone = makeTone(Fs,f,sd,samp,nd,offset,rd,params.filt);
-tone = [tone zeros(1,.02*Fs)];
+params.offsets = [0 .25 .5 .75];
+
+% make tones
+for i = 1:length(params.offsets)
+    tmp = makeTone(Fs,f,sd,samp,nd,params.offsets(i),rd,params.filt);
+    tone(i,:) = [tmp zeros(1,.02*Fs)];
+end
 
 disp(' ');
 disp('Press any key to start TRAINING...');
@@ -86,15 +89,18 @@ while 1
                 fprintf(s,'%i',0);
                 queueOutputData(n,[noise'*10 events']);
                 startBackground(n)
-                trialType(t) = 0;
+                trialType(t,1) = 0;
+                trialType(t,2) = 0;
                 disp(sprintf('%03d 0 %i %s NOISE_TRIAL',t,trialType(t),ardOutput(1:end-2)));
                 taskState = 2;
             else  %Signal, stim{2}
                 fprintf(s,'%i',1);
-                queueOutputData(n,[(tone+noise)'*10 events']);
+                offsetChoice = randi(size(tone,1));
+                queueOutputData(n,[(tone(offsetChoice,:)+noise)'*10 events']);
                 startBackground(n)
-                trialType(t) = 1;
-                disp(sprintf('%03d 0 %i %s SIGNAL_TRIAL',t,trialType(t),ardOutput(1:end-2)));
+                trialType(t,1) = 1;
+                trialType(t,2) = offsetChoice;
+                disp(sprintf('%03d %i %i %s SIGNAL_TRIAL',t,trialType(t,1),trialType(t,2),ardOutput(1:end-2)));
                 taskState = 2;
             end
             
