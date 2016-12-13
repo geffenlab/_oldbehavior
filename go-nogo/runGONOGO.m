@@ -32,8 +32,8 @@ delete(instrfindall)
     params.n.IsContinuous = false;
     
     % stimulus parameters
-    params.filt         = load('160831-filter-ephys-behavior');
-    params.filt         = params.filt.FILT;
+    params.filt         = load('SMALL_BOOTH_FILT_70dB_200-9e3kHZ');
+    params.filt         = params.filt.filt;
     params.toneF        = 10e3;
     params.toneD        = 25e-3;
     params.baseNoiseD   = 1;
@@ -47,7 +47,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = 0.01;
+    params.rewardD  = 0.009;
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
