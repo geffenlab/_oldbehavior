@@ -3,7 +3,7 @@ function wheel_behaviour_soundCard_nocases
 % run wheel_interruptor_test
 
 InitializePsychSound(1);
-fs=192000;
+fs=200000;
 sc = PsychPortAudio('Open', [], 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
 s=setupSerial('COM5'); % windows
 
@@ -55,15 +55,20 @@ while ~flag
         
         % PRESENT THE SOUND AND RECEIVE SOUND OFFSET
         
-        % PRESENT SOUND HERE
-        outputSignal1 = [rand(fs*3,1)/10; zeros(100,1)]';
-        outputSignal2 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
-        PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
+%         % PRESENT SOUND HERE
+%         outputSignal1 = [rand(fs*3,1)/10; zeros(100,1)]';
+%         outputSignal2 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
+        outputSignal1 = FM_stimGen(fs,1000,20,1,250)';
+        outputSignal2 = FM_stimGen(fs,1000,20,1,250)';
+        outputSignal3 = [ones(50,1)*3; zeros(length(outputSignal1)-100,1); ones(50,1)*3];
+%         PsychPortAudio('FillBuffer', sc, [outputSignal1,outputSignal2,outputSignal3]');
+         PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
         
         % Start presentation
         t1 = PsychPortAudio('Start', sc, 1); % 'Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0]
         
         % Wait for arduino to send info
+           arduinoChat=s.bytesAvailable
         soundOnset = serialRead(s);
         disp(['sound onset received: ' num2str(soundOnset)])
         

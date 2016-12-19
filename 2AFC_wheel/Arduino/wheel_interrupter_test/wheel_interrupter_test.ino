@@ -5,7 +5,7 @@
 int encoderPin1 = 2;
 int encoderPin2 = 3;
 int solenoidOut = 9;
-int soundCardInput = 5;       // 2nd channel from sound card with events
+int soundCardInput = 5;       // 3rd channel from sound card with events
 // int lickInput = 7;
 
 volatile int lastEncoded = 0;

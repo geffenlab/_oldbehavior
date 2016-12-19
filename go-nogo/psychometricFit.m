@@ -1,5 +1,5 @@
 function fit = psychometricFit(resps,count,snr)
-
+addpath(genpath('Palamedes'));
 % Initial parameters
 PF = @PAL_Logistic;
 p0 = [58 .3 0 0];%[mean(snr) 1/(max(snr)-min(snr))/4 0 0];

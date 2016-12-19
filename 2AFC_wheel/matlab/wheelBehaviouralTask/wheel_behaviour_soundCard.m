@@ -3,8 +3,8 @@ function wheel_behaviour_soundCard
 
 
 InitializePsychSound(1);
-fs=192000;
-sc = PsychPortAudio('Open', [], 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
+fs=200000;
+sc = PsychPortAudio('Open', 38, 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
 
 
 taskState = 2;
@@ -90,7 +90,7 @@ while wb.run==1
             % PRESENT SOUND HERE
             outputSignal1 = [rand(fs*3,1)/10; zeros(50,1)]';
             outputSignal2 = [ones(fs*3,1)*3; zeros(50,1)]';
-            PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
+            PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2])
            
             % Start presentation
             t1 = PsychPortAudio('Start', sc, 1); % 'Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0]

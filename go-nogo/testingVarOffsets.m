@@ -1,4 +1,4 @@
-function Testing(params)
+function testingVarOffsets(params)
 
 KbName('UnifyKeyNames');
 dbstop if error
@@ -23,6 +23,13 @@ fprintf(s,'%f %f %f %f ',varvect);
 % modify params to reflect actual stimuli used
 params.noiseD = params.noiseD(1);
 
+% for levels, use the top level and user input threshold
+threshold = input('Specify the threshold level of the tone in dB: ');
+params.dbSteps  = [params.dbSteps(1) threshold-70];
+params.dB       = 70 + params.dbSteps;
+params.amp70    = .1;
+params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
+
 % Make stimuli
 Fs = params.fsActual;
 f = params.toneF;
@@ -31,9 +38,9 @@ nd = params.baseNoiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-params.offsets = [0 .25 .5 .75];
-offProbs = [.25 .25 .25 .25];
-dbProbs = [.4 .2 .2 .05 .05 .05 .05];
+params.offsets = [0 .05 .1 .25 .5 .75];
+offProbs = ones(1,length(params.offsets))/length(params.offsets);
+dbProbs = [.4 .4 .2];
 
 params.offProbs = offProbs;
 params.saProbs = dbProbs;

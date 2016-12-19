@@ -47,7 +47,7 @@ delete(instrfindall)
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = 0.009;
+    params.rewardD  = 0.0125;
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
@@ -66,7 +66,7 @@ delete(instrfindall)
                 Testing(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
-                VariableNoiseThreshold(params);
+                testingVarOffsets(params);
         end
         cnt = cnt + 1;
     end
