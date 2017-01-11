@@ -25,6 +25,7 @@ amp = ones(1,length(freq));
 wave = vary_pure_tone( amp, freq2'/sampleRate );
 
 if nVarargs>0
+    aModRate = varargin{1};
     am = tone(aModRate,2*pi,duration,sampleRate);
     wave = wave.*am;
 end

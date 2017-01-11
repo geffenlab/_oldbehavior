@@ -3,14 +3,16 @@ function wheel_behaviour_soundCard_nocases
 % run wheel_interruptor_test
 
 InitializePsychSound(1);
-fs=200000;
-sc = PsychPortAudio('Open', [], 1, 3, fs, 2); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
+fs=192000;
+sc = PsychPortAudio('Open', [], 1, 3, fs, 3); %'Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels]
 s=setupSerial('COM5'); % windows
 
 % Initialise variables:
 trialNumber = 0;
 newTrial = 1;
 KbName('UnifyKeyNames');
+load('C:\Users\geffen-behaviour2\Documents\MATLAB\miniBooth2Calib\20170109_upperBoothRightSpkrInvFilt_3k-80k_fs192k.mat')
+load('C:\Users\geffen-behaviour2\Documents\MATLAB\miniBooth2Calib\20170109_upperBoothLeftSpkrInvFilt_3k-80k_fs192k.mat')
 
 fid = fopen('data.txt','a+');
 
@@ -58,17 +60,21 @@ while ~flag
 %         % PRESENT SOUND HERE
 %         outputSignal1 = [rand(fs*3,1)/10; zeros(100,1)]';
 %         outputSignal2 = [ones(50,1)*3; zeros(fs*3,1); ones(50,1)*3]';
-        outputSignal1 = FM_stimGen(fs,1000,20,1,250)';
-        outputSignal2 = FM_stimGen(fs,1000,20,1,250)';
+        outputSignal1 = FM_stimGen(fs,5000,20,1,250);
+        outputSignal1 = conv(outputSignal1,FILT_LEFT,'same');
+        outputSignal1 = envelopeKCW(outputSignal1,5,fs);
+        outputSignal2 = FM_stimGen(fs,5000,20,1,250);
+        outputSignal2 = conv(outputSignal2,FILT_RIGHT,'same');
+        outputSignal2 = envelopeKCW(outputSignal2,5,fs);
         outputSignal3 = [ones(50,1)*3; zeros(length(outputSignal1)-100,1); ones(50,1)*3];
 %         PsychPortAudio('FillBuffer', sc, [outputSignal1,outputSignal2,outputSignal3]');
-         PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2]);
+         PsychPortAudio('FillBuffer', sc, [outputSignal1;outputSignal2;outputSignal3']);
         
         % Start presentation
         t1 = PsychPortAudio('Start', sc, 1); % 'Start', pahandle [, repetitions=1] [, when=0] [, waitForStart=0]
         
         % Wait for arduino to send info
-           arduinoChat=s.bytesAvailable
+%            arduinoChat=s.bytesAvailable
         soundOnset = serialRead(s);
         disp(['sound onset received: ' num2str(soundOnset)])
         
