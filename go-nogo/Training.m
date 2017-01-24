@@ -9,6 +9,7 @@ hexPath = [params.hex filesep 'trainingWithOutput.ino.hex'];
 cmdOut
 disp('STARTING SERIAL');
 s = setupSerial(params.comPort);
+set(s,'TimeOut',20);
 n = params.n;
 
 % Open text file
@@ -23,7 +24,6 @@ fprintf(s,'%f %f %f %f ',varvect);
 params.dbSteps = params.dbSteps(1);
 params.dB = params.dB(1);
 params.toneA = params.toneA(1);
-params.postTargetTime = 1;
 
 % Make stimuli
 Fs = params.fsActual;
@@ -34,19 +34,44 @@ samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
 
-% make tones
-for i = 1:length(offset)
-    tmp = makeTone(Fs,f,sd,samp,offset(i)+params.postTargetTime,offset(i),rd,params.filt);
-    tone{i} = [tmp zeros(1,.02*Fs)];
+if ~exist(params.stim,'file')
+    % make tones
+    fprintf('Building stimuli...\n');
+    for i = 1:length(offset)
+        tmp = makeTone(Fs,f,sd,samp,offset(i)+params.postTargetTime,offset(i),rd,params.filt);
+        tone{i} = [tmp zeros(1,.02*Fs)];
+    end
+    
+    % make DRCs
+    for i = 1:length(offset)
+        for j = 1:params.nNoiseExemplars
+            [noise{i,j}] = makeDRC(Fs,rd,params.chordDuration,[params.baseNoiseD ...
+                offset(i) - params.baseNoiseD + params.postTargetTime],...
+                params.freqs,params.mu,params.sd,params.amp70, ...
+                params.filt);
+        end
+    end
+    fprintf('Done\n');
+    fprintf('Saving stimuli... ');
+    save(params.stim,'params','noise','tone','events');
+    fprintf(' done\n');
+else
+    % load it
+    fprintf('Loading stim...');
+    a=load(params.stim);
+    noise = a.noise;
+    tone = a.tone;
+    fprintf(' done\n');
 end
 
-% make DRCs
-for i = 1:length(offset)
-    for j = 1:params.nNoiseExemplars
-        noise{i,j} = makeDRC(Fs,rd,params.chordDuration,[params.baseNoiseD ...
-                            offset(i) - params.baseNoiseD + params.postTargetTime],...
-                             params.freqs,params.mu,params.sd,params.amp70, ...
-                             params.filt);
+% make events
+pulseWidth = .01;
+for i = 1:length(tone)
+    tmp = zeros(1,length(tone{i}));
+    tEnd = round((offset(i)+params.toneD) * Fs);
+    tmp(1:pulseWidth*Fs) = 1;
+    tmp(tEnd:tEnd+(pulseWidth*Fs)) = 1;
+    events{i} = tmp;
 end
 
 
@@ -87,8 +112,9 @@ while 1
             end
             
         case 1 %generate random stimuli
-            % make new noise each time
-            [noise,events] = makeNoise(Fs,nd,namp,rd,params.filt);
+            % choose a random DRC pattern and offset
+            pattChoice = randi(size(noise,2));
+            offsetChoice = randi(size(noise,1));            
             
             trialChoice(t) = rand < 0.5;
             if t > 3 && range(trialChoice(end-3:end-1)) == 0
@@ -96,19 +122,24 @@ while 1
             end
             if ~trialChoice(t) %Noise, stim{1}
                 fprintf(s,'%i',0);
-                queueOutputData(n,[noise'*10 events']);
+                queueOutputData(n,...
+                    [noise{offsetChoice,pattChoice}'*10 ...
+                    events{offsetChoice}'*5]);
                 startBackground(n)
                 trialType(t,1) = 0;
-                trialType(t,2) = 0;
-                disp(sprintf('%03d 0 %i %s NOISE_TRIAL',t,trialType(t),ardOutput(1:end-2)));
+                trialType(t,2) = offsetChoice;
+                trialType(t,3) = pattChoice;
+                disp(sprintf('%03d 0 %i %s NOISE_TRIAL',t,trialType(t,2),ardOutput(1:end-2)));
                 taskState = 2;
             else  %Signal, stim{2}
                 fprintf(s,'%i',1);
-                offsetChoice = randi(size(tone,1));
-                queueOutputData(n,[(tone(offsetChoice,:)+noise)'*10 events']);
+                queueOutputData(n,[(noise{offsetChoice,pattChoice} ...
+                    +tone{offsetChoice})'*10 ...
+                    events{offsetChoice}'*5]);
                 startBackground(n)
                 trialType(t,1) = 1;
                 trialType(t,2) = offsetChoice;
+                trialType(t,3) = pattChoice;
                 disp(sprintf('%03d %i %i %s SIGNAL_TRIAL',t,trialType(t,1),trialType(t,2),ardOutput(1:end-2)));
                 taskState = 2;
             end

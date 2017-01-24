@@ -1,5 +1,6 @@
 function [stimf,events,amps,dB] = makeDRC(fs,rd,cd,d,F,MU,SD,amp70,Filt)
 
+tic
 % number of samples in ramps and chords
 rs = rd * fs;
 cs = (cd - rd) * fs;
@@ -15,7 +16,6 @@ for i = 1:length(d)
 end
 
 % make a waveform
-tic
 tdur = sum(d);
 stim = zeros(1,round(fs*tdur));
 t = 0:1/fs:tdur-(1/fs);
@@ -44,7 +44,7 @@ for i = 1:length(F)
     
     stim = stim + (f .* ampEnv);
 end
-toc
+
 
 % ramp it
 ramp = make_ramp(rs);
@@ -58,9 +58,10 @@ events([1:pulseTime*fs]) = 1;
 events([length(stimf):length(stimf)+pulseTime*fs]) = 1;
 stimf = [stimf zeros(1,pulseTime*2*fs)];
 t1 = ((1:length(stimf))-1)/fs;
+toc
 
 
-if 1
+if 1==2
     figure
     subplot(2,1,1)
     imagesc(amps);

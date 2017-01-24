@@ -23,6 +23,7 @@ delete(instrfindall)
     if ~exist(params.data,'dir')
         mkdir(params.data);
     end
+    params.stim = 'C:\stimuli\gainBehavior\170124_stim.mat';
     
     % start nidaq
     params.comPort  = 'COM8';
@@ -38,7 +39,7 @@ delete(instrfindall)
     params.toneD        = 25e-3;
     params.baseNoiseD   = 3;
     params.noiseD       = [.05 .1 .25 .5 1 2 4 9] + params.baseNoiseD;
-    params.dbSteps      = linspace(0,-25,6); %linspace(0,-20,5);
+    params.dbSteps      = linspace(0,-15,6); %linspace(0,-20,5);
     params.dB           = 70 + params.dbSteps;
     params.amp70        = .1;
     params.toneA        = params.amp70 .* 10 .^ (params.dbSteps./20);
@@ -50,6 +51,7 @@ delete(instrfindall)
     params.sd           = [15 5];
     params.chordDuration = .025;
     params.nNoiseExemplars = 10;
+    params.postTargetTime = 1;
     
     % task parameters
     params.holdD    = 1.5;
