@@ -32,21 +32,28 @@ delete(instrfindall)
     params.n.IsContinuous = false;
     
     % stimulus parameters
-    params.filt     = load('SMALL_BOOTH_FILT_70dB_200-9e3kHZ');
-    params.filt     = params.filt.filt;
-    params.toneF    = 10e3;
-    params.toneD    = 1;
-    params.noiseD   = [0 .1 .5 1 2];
-    params.dbSteps  = linspace(0,-25,6); %linspace(0,-20,5);
-    params.dB       = 70 + params.dbSteps;
-    params.amp70    = .1;
-    params.toneA    = params.amp70 .* 10 .^ (params.dbSteps./20);
-    params.noiseA   = 1;
-    params.rampD    = .05;
+    params.filt         = load('SMALL_BOOTH_FILT_70dB_200-9e3kHZ');
+    params.filt         = params.filt.filt;
+    params.toneF        = 10e3;
+    params.toneD        = 25e-3;
+    params.baseNoiseD   = 3;
+    params.noiseD       = [.05 .1 .25 .5 1 2 4 9] + params.baseNoiseD;
+    params.dbSteps      = linspace(0,-25,6); %linspace(0,-20,5);
+    params.dB           = 70 + params.dbSteps;
+    params.amp70        = .1;
+    params.toneA        = params.amp70 .* 10 .^ (params.dbSteps./20);
+    params.noiseA       = 1;
+    params.rampD        = .005;
+    params.nTones       = 34;
+    params.freqs        = 10^3 * (2 .^ (([0:params.nTones-1])/6)); % this is n freqs spaced 1/6 octave apart
+    params.mu           = 50;
+    params.sd           = [15 5];
+    params.chordDuration = .025;
+    params.nNoiseExemplars = 10;
     
     % task parameters
     params.holdD    = 1.5;
-    params.rewardD  = .01; % duration valve stays open for water
+    params.rewardD  = 0.0125;
     params.respD    = 1.2;
     params.timeoutD = 7.0;
     
@@ -62,10 +69,10 @@ delete(instrfindall)
                 Training(params);
             case 2
                 disp('RUNNING TESTING');
-                testing(params);
+                Testing(params);
             case 3
                 disp('RUNNING VARIABLE NOISE');
-                VariableNoiseThreshold(params);
+                testingVarOffsets(params);
         end
         cnt = cnt + 1;
     end

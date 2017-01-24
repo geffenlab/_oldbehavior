@@ -4,7 +4,7 @@ dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'Training.ino.hex'];
+hexPath = [params.hex filesep 'trainingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -23,20 +23,32 @@ fprintf(s,'%f %f %f %f ',varvect);
 params.dbSteps = params.dbSteps(1);
 params.dB = params.dB(1);
 params.toneA = params.toneA(1);
-params.noiseD = params.noiseD(1);
+params.postTargetTime = 1;
 
 % Make stimuli
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD + params.toneD;
+offset = params.noiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-% make noise
-[noise,events] = makeStimFilt(Fs,f,sd,nd,0,namp,rd,params.filt);
-% make signals and add to noise
-stim = makeStimFilt(Fs,f,sd,nd,samp,namp,rd,params.filt);
+
+% make tones
+for i = 1:length(offset)
+    tmp = makeTone(Fs,f,sd,samp,offset(i)+params.postTargetTime,offset(i),rd,params.filt);
+    tone{i} = [tmp zeros(1,.02*Fs)];
+end
+
+% make DRCs
+for i = 1:length(offset)
+    for j = 1:params.nNoiseExemplars
+        noise{i,j} = makeDRC(Fs,rd,params.chordDuration,[params.baseNoiseD ...
+                            offset(i) - params.baseNoiseD + params.postTargetTime],...
+                             params.freqs,params.mu,params.sd,params.amp70, ...
+                             params.filt);
+end
+
 
 disp(' ');
 disp('Press any key to start TRAINING...');
@@ -75,6 +87,9 @@ while 1
             end
             
         case 1 %generate random stimuli
+            % make new noise each time
+            [noise,events] = makeNoise(Fs,nd,namp,rd,params.filt);
+            
             trialChoice(t) = rand < 0.5;
             if t > 3 && range(trialChoice(end-3:end-1)) == 0
                 trialChoice(t) = ~trialChoice(t-1);
@@ -83,15 +98,18 @@ while 1
                 fprintf(s,'%i',0);
                 queueOutputData(n,[noise'*10 events']);
                 startBackground(n)
-                trialType(t) = 0;
+                trialType(t,1) = 0;
+                trialType(t,2) = 0;
                 disp(sprintf('%03d 0 %i %s NOISE_TRIAL',t,trialType(t),ardOutput(1:end-2)));
                 taskState = 2;
             else  %Signal, stim{2}
                 fprintf(s,'%i',1);
-                queueOutputData(n,[stim'*10 events']);
+                offsetChoice = randi(size(tone,1));
+                queueOutputData(n,[(tone(offsetChoice,:)+noise)'*10 events']);
                 startBackground(n)
-                trialType(t) = 1;
-                disp(sprintf('%03d 0 %i %s SIGNAL_TRIAL',t,trialType(t),ardOutput(1:end-2)));
+                trialType(t,1) = 1;
+                trialType(t,2) = offsetChoice;
+                disp(sprintf('%03d %i %i %s SIGNAL_TRIAL',t,trialType(t,1),trialType(t,2),ardOutput(1:end-2)));
                 taskState = 2;
             end
             
@@ -182,11 +200,10 @@ if t > 10
     [f,pC] = plotPerformance(ts,trialType);
     fprintf('%g%% CORRECT\n',pC*100);
     print(f,sprintf('%s_performance.png',params.fn),'-dpng','-r300');
-    pause
 end
 fclose(fn);
 delete(s);
-
+pause
 
 
 

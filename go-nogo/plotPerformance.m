@@ -13,6 +13,9 @@ for i = 1:length(t)
 end
 
 % Calculate hits and stuff
+if size(ttype,1) > 2
+    ttype = ttype(:,1)';
+end
 hits = ttype(ttype > 0) & resp(ttype > 0);
 crs = ~ttype(ttype == 0) & ~resp(ttype == 0);
 

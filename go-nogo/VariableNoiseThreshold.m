@@ -1,13 +1,12 @@
-function VariableNoiseThreshold(params)
+function VariableNoiseThreshold_ephys(params)
 
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
 %Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'testing.ino.hex'];
+hexPath = [params.hex filesep 'testingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
-cmdOut
 disp('STARTING SERIAL');
 s = setupSerial(params.comPort);
 n = params.n;
@@ -45,11 +44,11 @@ events = cell(length(nd),1);
 fprintf('\nBuilding stimuli...\n');
 for i = 1:length(nd)
     %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,1+nd(i),0,namp,rd,params.filt);
+    [stim{i,1},events{i,1}] = makeStimFilt_ephys(Fs,f,sd,nd(i),0,namp,rd,params.filt);
     
     %columns 2:end
     for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,1+nd(i),samp(j),namp,rd,params.filt);
+        stim{i,j+1} = makeStimFilt_ephys(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
     end
 end
 

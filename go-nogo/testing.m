@@ -1,13 +1,11 @@
 function Testing(params)
+
 KbName('UnifyKeyNames');
 dbstop if error
 delete(instrfindall)
 
-% Add palamedes toolbox path for psychometric fits
-addpath(genpath('Palamedes'));
-
-%Load corresponding Arduino sketch
-hexPath = [params.hex filesep 'Testing.ino.hex'];
+% Load corresponding Arduino sketch
+hexPath = [params.hex filesep 'testingWithOutput.ino.hex'];
 [~, cmdOut] = loadArduinoSketch(params.comPort,hexPath);
 cmdOut
 disp('STARTING SERIAL');
@@ -29,29 +27,22 @@ params.noiseD = params.noiseD(1);
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-nd = params.noiseD + params.toneD;
+nd = params.baseNoiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
-durProbs = ones(1,length(params.noiseD)) ./ length(params.noiseD);
+params.offsets = [0 .25 .5 .75];
+offProbs = [.25 .25 .25 .25];
 dbProbs = [.4 .2 .2 .05 .05 .05 .05];
-%[.5 ([.3 .2 .2 .2 .1]./2)];
-%[.5 (ones(1,length(params.toneA)) ./ length(params.toneA))/2];
 
-%Preallocate stimulus package
-stim = cell(length(nd),length(samp)+1);
-events = cell(length(nd),1);
+params.offProbs = offProbs;
+params.saProbs = dbProbs;
+
+% make tones at each offset
 disp('Building stimuli...');
-
-% Build Stimuli
-for i = 1:length(nd)
-    %column 1 noise only
-    [stim{i,1},events{i,1}] = makeStimFilt(Fs,f,sd,nd(i),0,namp,rd,params.filt);
-    
-    %columns 2:end signal decreases in intensity
-    for j = 1:length(samp)
-        stim{i,j+1} = makeStimFilt(Fs,f,sd,nd(i),samp(j),namp,rd,params.filt);
-    end
+for i = 1:length(params.offsets)
+    tmp = makeTone(Fs,f,sd,1,nd,params.offsets(i),rd,params.filt);
+    tone(i,:) = [tmp zeros(1,.02*Fs)];
 end
 
 disp(' ');
@@ -73,139 +64,145 @@ while 1
     
     switch taskState
         
-        case 0 %proceed when arduino signals (2s no licks)
-            t = t + 1;
-            lickCount = 0;
-            
-            if t ~= 1
-                fprintf(' Waiting %g seconds with no licks to proceed...\n',params.holdD)
+      case 0 %proceed when arduino signals (2s no licks)
+        t = t + 1;
+        lickCount = 0;
+        
+        if t ~= 1
+            fprintf(' Waiting %g seconds with no licks to proceed...\n',params.holdD)
+        end
+        
+        while 1
+            if s.BytesAvailable > 0
+                ardOutput = fscanf(s,'%c');
+                ts(t).trialstart = str2num(ardOutput(1:end-2));
+                taskState = 1;
+                break
             end
-            
-            while 1
-                if s.BytesAvailable > 0
-                    ardOutput = fscanf(s,'%c');
-                    ts(t).trialstart = str2num(ardOutput(1:end-2));
-                    taskState = 1;
-                    break
-                end
+        end
+        
+      case 1 %generate random stimuli
+        % make new noise each time
+        [noise,events] = makeNoise(Fs,nd,namp,rd,params.filt);  
+        
+        % random number to determine trial type
+        num = rand;
+        
+        % Choose duration
+        intd = [0 cumsum(offProbs)];
+        d = discretize(num,intd,'IncludedEdge','right');
+        
+        %Choose Signal Strength
+        intl = [intd(d) intd(d) + (offProbs(d).*cumsum(dbProbs))];
+        l = discretize(num,intl,'IncludedEdge','right');
+        
+        trialType{t} = [d (l-1)];
+        
+        %Prevent more than three trial or noise signals in a row
+        ttype(t) = double(trialType{t}(2));
+        tdur(t) = double(trialType{t}(1));
+        
+        if t > 4
+            if all(ttype(end-3:end) == 0)
+                intx = [0 cumsum(ones(1,length(intl)-2) / (length(intl)-2))];
+                trialType{t}(2) = discretize(rand,intx,'IncludedEdge','right');
+                ttype(t) = double(trialType{t}(2));
             end
-            
-        case 1 %generate random stimuli
-            
-            %Random Number to Determine Trial Type
-            num = rand;
-            
-            % Choose duration
-            intd = [0 cumsum(durProbs)];
-            d = discretize(num,intd,'IncludedEdge','right');
-            
-            %Choose Signal Strength
-            intl = [intd(d) intd(d) + (durProbs(d).*cumsum(dbProbs))];
-            l = discretize(num,intl,'IncludedEdge','right');
-            
-            trialType{t} = [d (l-1)];
-            
-            %Prevent more than three trial or noise signals in a row
-            ttype(t) = double(trialType{t}(2));
-            tdur(t) = double(trialType{t}(1));
-            
-            if t > 4
-                if all(ttype(end-3:end) == 0)
-                    intx = [0 cumsum(ones(1,length(intl)-2) / (length(intl)-2))];
-                    trialType{t}(2) = discretize(rand,intx,'IncludedEdge','right');
-                    ttype(t) = double(trialType{t}(2));
-                end
-                if all(ttype(end-3:end) > 0);
-                    trialType{t}(2) = 0;
-                    ttype(t) = double(trialType{t}(2));
-                end
-                if range(tdur(end-3:end)) == 0 && length(nd) > 1
-                    inty = [0 cumsum(ones(1,length(nd) - 1) / (length(nd) - 1))];
-                    trialType{t}(1) = discretize(rand,inty,'IncludedEdge','right') + 1;
-                    tdur(t) = double(trialType{t}(1));
-                end
+            if all(ttype(end-3:end) > 0);
+                trialType{t}(2) = 0;
+                ttype(t) = double(trialType{t}(2));
             end
-            
-            if trialType{t}(2) == 0 %Noise
-                fprintf(s,'%i',0);
-                queueOutputData(n,[stim{trialType{t}(1),trialType{t}(2)+1}'*10 events{trialType{t}(1),1}']);
-                fprintf('%03d 0 %d %d %s NOISE_TRIAL\n',t,trialType{t}(1),trialType{t}(2),ardOutput(1:end-2));
-                startForeground(n)
-                taskState = 2;
-            else                    %Signal
-                fprintf(s,'%i',1);
-                queueOutputData(n,[stim{trialType{t}(1),trialType{t}(2)+1}'*10 events{trialType{t}(1),1}']);
-                fprintf('%03d 0 %d %d %s SIGNAL_TRIAL\n',t,trialType{t}(1),trialType{t}(2),ardOutput(1:end-2));
-                startForeground(n)
-                taskState = 2;
+            if range(tdur(end-3:end)) == 0 && length(nd) > 1
+                inty = [0 cumsum(ones(1,length(nd) - 1) / (length(nd) - 1))];
+                trialType{t}(1) = discretize(rand,inty,'IncludedEdge','right') + 1;
+                tdur(t) = double(trialType{t}(1));
             end
-            
-        case 2 %Interpret Arduino Output for Display
-            
+        end
+        
+        if trialType{t}(2) == 0 
+            %Noise
+            fprintf(s,'%i',0);
+            queueOutputData(n,[noise' * 10 events']);
+            fprintf('%03d 0 %d %d %s NOISE_TRIAL\n',t,trialType{t}(1),trialType{t}(2),ardOutput(1:end-2));
+            startForeground(n)
+            taskState = 2;
+        else                    
+            %Signal
+            fprintf(s,'%i',1);
+            queueOutputData(n,[...
+                ((tone(tdur(t),:) * samp(ttype(t))) + noise)'*10 ...
+                events']);
+            fprintf('%03d 0 %d %d %s SIGNAL_TRIAL\n',t,trialType{t}(1),trialType{t}(2),ardOutput(1:end-2));
+            startForeground(n)
+            taskState = 2;
+        end
+        
+      case 2 %Interpret Arduino Output for Display
+        
+        ardOutput = fscanf(s,'%c');
+        if ardOutput(1) == 'L'
+            fprintf('%03d 1 %d %d %s LICK\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
+            lickCount = lickCount + 1;
+            ts(t).lick(lickCount) = str2double(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d LICK\n',t,trialType{t}(1),trialType{t}(2),ts(t).lick(lickCount));
+        elseif ardOutput(1) == 'R'
+            fprintf('%03d 1 %d %d %s REWARD\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
+            ts(t).rewardstart = str2num(ardOutput(2:end-2));
+            rewardState = 1;
+            fprintf(fn,'%03d %d %d %010d REWARD_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardstart);
+        elseif ardOutput(1) == 'W'
+            ts(t).rewardend = str2num(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d REWARD_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardend);
+        elseif ardOutput(1) == 'T'
+            if timeoutState ~= 1
+                fprintf('%03d 1 %d %d %s TIMEOUT\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
+                timeoutState = 1;
+            end
+            ts(t).timeoutstart = str2num(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d TIMEOUT_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).timeoutstart);
+        elseif ardOutput(1) == 'S'
+            ts(t).stimstart = str2num(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d STIM_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).stimstart);
+        elseif ardOutput(1) == 'O'
+            ts(t).stimend = str2num(ardOutput(2:end-2));
+            ts(t).respstart = str2num(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d STIM_END_RESP_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).stimend);
+        elseif ardOutput(1) == 'C'
+            fprintf('    %g Lick(s) Detected...',lickCount)
+            ts(t).respend = str2num(ardOutput(2:end-2));
+            fprintf(fn,'%03d %d %d %010d RESP_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).respend);
+            taskState = 3;
+        end
+        
+      case 3 %Timeout, Reward
+        while timeoutState == 1
             ardOutput = fscanf(s,'%c');
-            if ardOutput(1) == 'L'
-                fprintf('%03d 1 %d %d %s LICK\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
-                lickCount = lickCount + 1;
-                ts(t).lick(lickCount) = str2double(ardOutput(2:end-2));
-                fprintf(fn,'%03d %d %d %010d LICK\n',t,trialType{t}(1),trialType{t}(2),ts(t).lick(lickCount));
-            elseif ardOutput(1) == 'R'
-                fprintf('%03d 1 %d %d %s REWARD\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
-                ts(t).rewardstart = str2num(ardOutput(2:end-2));
-                rewardState = 1;
-                fprintf(fn,'%03d %d %d %010d REWARD_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardstart);
-            elseif ardOutput(1) == 'W'
-                ts(t).rewardend = str2num(ardOutput(2:end-2));
-                fprintf(fn,'%03d %d %d %010d REWARD_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardend);
-            elseif ardOutput(1) == 'T'
-                if timeoutState ~= 1
-                    fprintf('%03d 1 %d %d %s TIMEOUT\n',t,trialType{t}(1),trialType{t}(2),ardOutput(2:end-2))
-                    timeoutState = 1;
-                end
+            if ardOutput(1) == 'T'
                 ts(t).timeoutstart = str2num(ardOutput(2:end-2));
                 fprintf(fn,'%03d %d %d %010d TIMEOUT_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).timeoutstart);
-            elseif ardOutput(1) == 'S'
-                ts(t).stimstart = str2num(ardOutput(2:end-2));
-                fprintf(fn,'%03d %d %d %010d STIM_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).stimstart);
-            elseif ardOutput(1) == 'O'
-                ts(t).stimend = str2num(ardOutput(2:end-2));
-                ts(t).respstart = str2num(ardOutput(2:end-2));
-                fprintf(fn,'%03d %d %d %010d STIM_END_RESP_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).stimend);
-            elseif ardOutput(1) == 'C'
-                fprintf('    %g Lick(s) Detected...',lickCount)
-                ts(t).respend = str2num(ardOutput(2:end-2));
-                fprintf(fn,'%03d %d %d %010d RESP_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).respend);
-                taskState = 3;
+            elseif ardOutput(1) == 'Q'
+                ts(t).timeoutend = str2num(ardOutput(2:end-2));
+                fprintf(fn,'%03d %d %d %010d TIMEOUT_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).timeoutend);
+                timeoutState = 0;
+                break
             end
-            
-        case 3 %Timeout, Reward
-            while timeoutState == 1
-                ardOutput = fscanf(s,'%c');
-                if ardOutput(1) == 'T'
-                    ts(t).timeoutstart = str2num(ardOutput(2:end-2));
-                    fprintf(fn,'%03d %d %d %010d TIMEOUT_START\n',t,trialType{t}(1),trialType{t}(2),ts(t).timeoutstart);
-                elseif ardOutput(1) == 'Q'
-                    ts(t).timeoutend = str2num(ardOutput(2:end-2));
-                    fprintf(fn,'%03d %d %d %010d TIMEOUT_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).timeoutend);
-                    timeoutState = 0;
-                    break
-                end
+        end
+        while rewardState == 1
+            ardOutput = fscanf(s,'%c');
+            if ardOutput(1) == 'W'
+                ts(t).rewardend = str2num(ardOutput(2:end-2));
+                fprintf(fn,'%03d %d %d %010d REWARD_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardend);
+                rewardState = 0;
+                break
             end
-            while rewardState == 1
-                ardOutput = fscanf(s,'%c');
-                if ardOutput(1) == 'W'
-                    ts(t).rewardend = str2num(ardOutput(2:end-2));
-                    fprintf(fn,'%03d %d %d %010d REWARD_END\n',t,trialType{t}(1),trialType{t}(2),ts(t).rewardend);
-                    rewardState = 0;
-                    break
-                end
-            end
-            taskState = 4;
-            
-        case 4 %End Trial
-            if n.IsRunning == 1
-                stop(n)
-            end
-            taskState = 0;
+        end
+        taskState = 4;
+        
+      case 4 %End Trial
+        if n.IsRunning == 1
+            stop(n)
+        end
+        taskState = 0;
     end
     
     [~,~,keyCode] = KbCheck;
@@ -221,7 +218,7 @@ while 1
     end
 end
 
-if t > 10
+if t > 50
     save(sprintf('%s_testing.mat',params.fn),'ts','trialType','params');
     [f,pC] = plotPerformance(ts,ttype);
     [h,~] = Psychometric_Curve_CA(ts,trialType,params);
