@@ -29,10 +29,12 @@ params.toneA = params.toneA(1);
 Fs = params.fsActual;
 f = params.toneF;
 sd = params.toneD;
-offset = params.noiseD;
 samp = params.toneA;
 namp = params.noiseA;
 rd = params.rampD;
+offset = params.baseNoiseD + [.25 .5 .75 1];
+
+params.stim = 'C:\stimuli\gainBehavior\170126_trainingStim.mat';
 
 if ~exist(params.stim,'file')
     % make tones
@@ -53,7 +55,7 @@ if ~exist(params.stim,'file')
     end
     fprintf('Done\n');
     fprintf('Saving stimuli... ');
-    save(params.stim,'params','noise','tone','events');
+    save(params.stim,'params','noise','tone');
     fprintf(' done\n');
 else
     % load it
@@ -65,7 +67,7 @@ else
 end
 
 % make events
-pulseWidth = .01;
+pulseWidth = .02;
 for i = 1:length(tone)
     tmp = zeros(1,length(tone{i}));
     tEnd = round((offset(i)+params.toneD) * Fs);
