@@ -23,7 +23,7 @@ delete(instrfindall)
     if ~exist(params.data,'dir')
         mkdir(params.data);
     end
-    params.stim = 'C:\stimuli\gainBehavior\170126_stim.mat';
+    params.stim = 'C:\stimuli\gainBehavior\170202_stim.mat';
     
     % start nidaq
     params.comPort  = 'COM8';
@@ -35,7 +35,7 @@ delete(instrfindall)
     % stimulus parameters
     params.filt         = load('SMALL_BOOTH_FILT_70dB_200-9e3kHZ');
     params.filt         = params.filt.filt;
-    params.toneF        = 10e3;
+    params.toneF        = 15e3;
     params.toneD        = 25e-3;
     params.baseNoiseD   = 3;
     params.noiseD       = [.05 .1 .25 .5 1 2 4 9] + params.baseNoiseD;
